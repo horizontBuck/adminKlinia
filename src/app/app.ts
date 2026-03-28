@@ -18,7 +18,7 @@ export class App {
     constructor(public scriptLoader: ScriptLoader)
     {}
   async ngAfterViewInit(): Promise<void> {
-    try {
+  /*   try {
       await this.scriptLoader.loadAll([
         { src: 'assets/js/jquery.js', attr: { defer: 'true' } },
         { src: 'assets/js/popper.min.js', attr: { defer: 'true' } },
@@ -38,7 +38,7 @@ export class App {
       ]);
     } catch (err) {
       console.error('Error cargando scripts en Home', err);
-    }
+    } */
   }
 }
 

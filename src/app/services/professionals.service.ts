@@ -32,119 +32,129 @@ export interface Professional {
 export class ProfessionalsService {
   /** 🔹 Colección (usa 'approved_providers' si creaste la vista pública) */
   private collection = 'users';
-
+private loadingProfessionals = false;
   private _professionals$ = new BehaviorSubject<Professional[]>([]);
   public professionals$ = this._professionals$.asObservable();
 
+ 
   constructor(private reviewsService: ReviewsService, private auth: AuthPocketbaseService) {
-    console.log('🩺 ProfessionalsService inicializado');
-    this.loadProfessionals();
-    this.subscribeRealtime();
-    this.listenAppointmentsRealtime();
-    this.auth.pb.authStore.onChange((token, model) => {
-      if (model) {
-        this.listenAppointmentsRealtime();
-      }
-    });
+  console.log('🩺 ProfessionalsService inicializado');
+  this.subscribeRealtime();
+  this.listenAppointmentsRealtime();
 
-  }
+  this.auth.pb.authStore.onChange((token, model) => {
+    if (model) {
+      this.listenAppointmentsRealtime();
+    }
+  });
+}
   getCurrentUserId(): string | undefined {
     return this.auth.pb.authStore.model?.id;
   }
 
 
+/* async loadProfessionals(): Promise<void> {
+  console.log('🔍 Cargando profesionales...');
 
-  async loadProfessionals(): Promise<void> {
-    console.log('🔍 Cargando profesionales...');
+  try {
+    const records = await this.auth.pb.collection(this.collection).getFullList<Professional>({
+      filter: '(role = "proveedor" || role = "experto")',
+      sort: '-created',
+      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created'
+    });
 
-    try {
-      const records = await this.auth.pb.collection(this.collection).getFullList<Professional>({
-        filter: 'role = "proveedor" || role = "experto"',
-        sort: '-created',
-        // ✅ AÑADIDOS lat,lng,isOnline
-        fields: `
-            id,
-            name,
-            email,
-            avatarFile,
-            profession,
-            businessName,
-            providerStatus,
-            phone,
-            especialidades,
-            modalidadAtencion,
-            zonaAtencion,
-            description,
-            category,
-            lat,
-            lng,
-            isOnline,
-            Biography,
-            gender,
-            created
-          `,
+    console.log('✅ Registros crudos encontrados:', records);
 
-      });
+    const processed = records.map((u: any) => ({
+      id: u.id,
+      name: u.name || 'Profesional',
+      email: u.email,
+      avatarFile: u.avatarFile,
+      profession: u.profession,
+      businessName: u.businessName,
+      providerStatus: u.providerStatus,
+      phone: u.phone,
+      category: u.category,
+      especialidades: this.parseJson(u.especialidades),
+      modalidadAtencion: this.parseJson(u.modalidadAtencion),
+      zonaAtencion: this.parseJson(u.zonaAtencion),
+      rating: 0,
+      price: u.price || Math.floor(Math.random() * 30) + 20,
+      lat: Number(u.lat),
+      lng: Number(u.lng),
+      isOnline: !!u.isOnline,
+      description: u.description,
+      Biography: u.Biography,
+      gender: u.gender,
+      created: u.created
+    }));
 
+    console.log('✅ Profesionales procesados:', processed);
+    this._professionals$.next(processed);
+  } catch (error: any) {
+    console.error('❌ Error cargando profesionales:', error);
+    console.error('📋 error.response:', error?.response);
+    console.error('📋 error.data:', error?.data);
 
-      const processed = records.map((u: any) => ({
-        id: u.id,
-        name: u.name || 'Profesional',
-        email: u.email,
-        avatarFile: u.avatarFile,
-        profession: u.profession,
-        businessName: u.businessName,
-        providerStatus: u.providerStatus,
-        phone: u.phone,
-        category: u.category, // 👈 CRÍTICO
-        especialidades: this.parseJson(u.especialidades),
-        modalidadAtencion: this.parseJson(u.modalidadAtencion),
-        zonaAtencion: this.parseJson(u.zonaAtencion),
-        rating: 0, // Will be set below
-        price: u.price || Math.floor(Math.random() * 30) + 20,
-        lat: Number(u.lat),
-        lng: Number(u.lng),
-        isOnline: !!u.isOnline,
-        description: u.description,
-        Biography: u.Biography,
-        gender: u.gender,
-      }));
-
-      // Fetch all reviews and calculate averages
-      try {
-        const allReviews = await this.reviewsService.getAllReviews() as any[];
-        const ratingMap = new Map<string, { sum: number; count: number }>();
-        allReviews.forEach((review: any) => {
-          const proId = review.professional;
-          if (!ratingMap.has(proId)) {
-            ratingMap.set(proId, { sum: 0, count: 0 });
-          }
-          const entry = ratingMap.get(proId)!;
-          entry.sum += review.rating;
-          entry.count += 1;
-        });
-        processed.forEach(pro => {
-          if (ratingMap.has(pro.id)) {
-            const entry = ratingMap.get(pro.id)!;
-            pro.rating = entry.sum / entry.count;
-          } else {
-            pro.rating = 0;
-          }
-        });
-      } catch (err) {
-        console.error('Error fetching reviews for ratings:', err);
-        // Fallback to random
-        processed.forEach(pro => {
-          pro.rating = Math.round(Math.random() * 10) / 2 + 3.5;
-        });
-      }
-
-      this._professionals$.next(processed);
-    } catch (error) {
+    if (!this._professionals$.value.length) {
       this._professionals$.next([]);
     }
   }
+} */
+async loadProfessionals(): Promise<void> {
+  if (this.loadingProfessionals) {
+    console.log('⏳ loadProfessionals cancelado: ya hay una carga en curso');
+    return;
+  }
 
+  this.loadingProfessionals = true;
+  console.log('🔍 Cargando profesionales...');
+  console.log('👤 Usuario autenticado actual:', this.auth.pb.authStore.model);
+
+  try {
+    const records = await this.auth.pb.collection(this.collection).getFullList<Professional>({
+      filter: '(role = "proveedor" || role = "experto")',
+      sort: '-created',
+      requestKey: null,
+      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created'
+    });
+
+    console.log('✅ Registros encontrados:', records);
+
+    const processed = records.map((u: any) => ({
+      id: u.id,
+      name: u.name || 'Profesional',
+      email: u.email,
+      avatarFile: u.avatarFile,
+      profession: u.profession,
+      businessName: u.businessName,
+      providerStatus: u.providerStatus,
+      phone: u.phone,
+      category: u.category,
+      especialidades: this.parseJson(u.especialidades),
+      modalidadAtencion: this.parseJson(u.modalidadAtencion),
+      zonaAtencion: this.parseJson(u.zonaAtencion),
+      rating: 0,
+      price: u.price || Math.floor(Math.random() * 30) + 20,
+      lat: Number(u.lat),
+      lng: Number(u.lng),
+      isOnline: !!u.isOnline,
+      description: u.description,
+      Biography: u.Biography,
+      gender: u.gender,
+      created: u.created
+    }));
+
+    console.log('✅ Profesionales procesados:', processed);
+    this._professionals$.next(processed);
+  } catch (error: any) {
+    console.error('❌ Error cargando profesionales:', error);
+    console.error('📋 response:', error?.response);
+    console.error('📋 data:', error?.data);
+  } finally {
+    this.loadingProfessionals = false;
+  }
+}
 
   getAllProfessionals() {
     return this._professionals$.value;
@@ -165,7 +175,7 @@ export class ProfessionalsService {
     }
   }
 
-  getAvatarUrl(user: any): string {
+  /* getAvatarUrl(user: any): string {
     try {
       if (!user || !user.avatarFile) {
         return 'assets/img/avatar.png';
@@ -182,17 +192,18 @@ export class ProfessionalsService {
     } catch (e) {
       return 'assets/img/avatar.png';
     }
-  }
+  } */
 
 
   /** 🔹 Suscripción realtime (Server-Sent Events) */
   async subscribeRealtime(): Promise<void> {
+    
     try {
       await this.auth.pb.collection(this.collection).subscribe('*', (e) => {
         console.log('👀 Cambio detectado en profesionales:', e.action, e.record);
         // recarga datos tras crear/editar/eliminar
-        this.loadProfessionals();
-      });
+/*         this.loadProfessionals();
+ */      });
       console.log('🔁 Suscripción realtime activa en:', this.collection);
     } catch (err) {
       console.error('❌ Error en suscripción realtime:', err);
