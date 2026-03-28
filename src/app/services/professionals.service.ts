@@ -26,6 +26,9 @@ export interface Professional {
   lng?: number;
   description?: string;
   created?: string;
+  birthdate?: string;
+  habilitacionNumber?: string;
+  docNumber?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -116,7 +119,7 @@ async loadProfessionals(): Promise<void> {
       filter: '(role = "proveedor" || role = "experto")',
       sort: '-created',
       requestKey: null,
-      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created'
+      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber'
     });
 
     console.log('✅ Registros encontrados:', records);
@@ -142,7 +145,9 @@ async loadProfessionals(): Promise<void> {
       description: u.description,
       Biography: u.Biography,
       gender: u.gender,
-      created: u.created
+      created: u.created,
+      habilitacionNumber: u.habilitacionNumber,
+      docNumber: u.docNumber
     }));
 
     console.log('✅ Profesionales procesados:', processed);

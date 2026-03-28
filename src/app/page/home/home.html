@@ -157,8 +157,7 @@
                                             </td>
                                             <td>
                                                 <button type="button" class="view"
-                                                    (click)="viewProfessional(professional)"
-                                                    [disabled]="professional.providerStatus === 'approved' || loadingIds.has(professional.id)">
+                                                    (click)="viewProfessional(professional)">
                                                     {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Ver' }}
                                                 </button>
                                             </td>
@@ -170,6 +169,7 @@
                             </div>  
                         </div>
                     </div>
+                    
                     <!-- MODAL -->
                     <div
                         class="custom-modal-backdrop"
@@ -198,13 +198,16 @@
                                         <p><strong>Correo:</strong> {{ selectedProfessional.email || 'No disponible' }}</p>
                                         <p><strong>Estado:</strong> {{ selectedProfessional.providerStatus || 'pending' }}</p>
                                         <p><strong>Fecha de registro:</strong> {{ formatDate(selectedProfessional.created) }}</p>
+                                        <p><strong>Fecha de nacimiento:</strong> {{ selectedProfessional.birthdate  }}</p>
+                                        <p><strong>Genero:</strong> {{ selectedProfessional.gender || 'No disponible' }}</p>
+                                        <p><strong>Número de habilitación:</strong> {{ selectedProfessional.habilitacionNumber || 'No disponible' }}</p>
                                     </div>
                                 </div>
 
                                 <div class="professional-grid">
                                     <div class="detail-card">
-                                        <h5>ID</h5>
-                                        <p>{{ selectedProfessional.id }}</p>
+                                        <h5>Numero de Documento</h5>
+                                        <p>{{ selectedProfessional.docNumber || 'No disponible' }}</p>
                                     </div>
 
                                     <div class="detail-card" *ngIf="selectedProfessional.phone">
@@ -220,6 +223,16 @@
                                     <div class="detail-card" *ngIf="selectedProfessional.businessName">
                                         <h5>Nombre de la empresa</h5>
                                         <p>{{ selectedProfessional.businessName }}</p>
+                                    </div>
+
+                                    <div class="detail-card" *ngIf="selectedProfessional.category">
+                                        <h5>Especialidad</h5>
+                                        <p>{{ selectedProfessional.category }}</p>
+                                    </div>
+
+                                    <div class="detail-card" *ngIf="selectedProfessional.modalidadAtencion">
+                                        <h5>Modalidad de atención</h5>
+                                        <p>{{ selectedProfessional.modalidadAtencion }}</p>
                                     </div>
                                 </div>
 
