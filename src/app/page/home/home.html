@@ -43,8 +43,6 @@
                         <li><a href=""><i class="fas fa-wheelchair"></i>Profesionales</a></li>
                         <li><a href=""><i class="fas fa-plus-circle"></i>Pacientes</a></li>
                         <li><a href=""><i class="fas fa-star"></i>Reviews</a></li>
-                        <li><a href=""><i class="fas fa-user"></i>Perfil</a></li>
-                        <li><a href=""><i class="fas fa-unlock-alt"></i>Contraseña</a></li>
                         <li><a href=""><i class="fas fa-sign-out-alt"></i>Salir</a></li>
                     </ul>
                 </div>
@@ -123,7 +121,8 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let professional of professionals; trackBy: trackByProfessionalId">                                            <td>
+                                        <tr *ngFor="let professional of professionals; trackBy: trackByProfessionalId">
+                                            <td>
                                                 <div class="name-box">
                                                     <figure class="image">
                                                         <img [src]="getAvatarUrl(professional)"
@@ -142,47 +141,38 @@
                                                 <p>{{ professional.providerStatus || 'pending' }}</p>
                                             </td>
                                             <td>
-    <button
-        type="button"
-        class="accept"
-        (click)="acceptProfessional(professional)"
-[disabled]="professional.providerStatus === 'approved' || loadingIds.has(professional.id)">
-       {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Aprobar' }}
-    </button>
-</td>
-.
-<td>
-    <button
-        type="button"
-        class="cancel"
-        (click)="rejectProfessional(professional)"
-        [disabled]="professional.providerStatus === 'rejected' || loadingIds.has(professional.id)">
-        {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Rechazar' }}
-    </button>
-</td>
+                                                <button type="button" class="accept"
+                                                    (click)="acceptProfessional(professional)"
+                                                    [disabled]="professional.providerStatus === 'approved' || loadingIds.has(professional.id)">
+                                                    {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Aprobar' }}
+                                                </button>
+                                            </td>
+                                            .
                                             <td>
-    <button
-        type="button"
-        class="view"
-        (click)="viewProfessional(professional)"
-        [disabled]="loadingIds.has(professional.id)">
-        Ver
-    </button>
-</td>
-                                            
+                                                <button type="button" class="cancel"
+                                                    (click)="rejectProfessional(professional)"
+                                                    [disabled]="professional.providerStatus === 'rejected' || loadingIds.has(professional.id)">
+                                                    {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Rechazar' }}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="view"
+                                                    (click)="viewProfessional(professional)"
+                                                    [disabled]="loadingIds.has(professional.id)">
+                                                    Ver
+                                                </button>
+                                            </td>
+
                                         </tr>
                                     </tbody>
 
                                 </table>
-                            </div>  
+                            </div>
                         </div>
                     </div>
-                    
+
                     <!-- MODAL -->
-                    <div
-                        class="custom-modal-backdrop"
-                        *ngIf="isModalOpen"
-                        (click)="closeProfessionalModal()">
+                    <div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeProfessionalModal()">
                     </div>
 
                     <div class="custom-modal" *ngIf="isModalOpen && selectedProfessional">
@@ -193,21 +183,25 @@
                                     ×
                                 </button>
                             </div>
-.
+                            .
                             <div class="custom-modal-body">
                                 <div class="professional-detail-top">
-                                    <img
-                                        class="professional-avatar"
-                                        [src]="getAvatarUrl(selectedProfessional)"
-                                        [alt]="selectedProfessional.name"> 
+                                    <img class="professional-avatar" [src]="getAvatarUrl(selectedProfessional)"
+                                        [alt]="selectedProfessional.name">
                                     <div class="professional-main-info">
                                         <h4>{{ selectedProfessional.name || 'Sin nombre' }}</h4>
-                                        <p><strong>Correo:</strong> {{ selectedProfessional.email || 'No disponible' }}</p>
-                                        <p><strong>Estado:</strong> {{ selectedProfessional.providerStatus || 'pending' }}</p>
-                                        <p><strong>Fecha de registro:</strong> {{ formatDate(selectedProfessional.created) }}</p>
-                                        <p><strong>Fecha de nacimiento:</strong> {{ formatDate(selectedProfessional.birthdate) }}</p>
-                                        <p><strong>Genero:</strong> {{ selectedProfessional.gender || 'No disponible' }}</p>
-                                        <p><strong>Número de habilitación:</strong> {{ selectedProfessional.habilitacionNumber || 'No disponible' }}</p>
+                                        <p><strong>Correo:</strong> {{ selectedProfessional.email || 'No disponible' }}
+                                        </p>
+                                        <p><strong>Estado:</strong> {{ selectedProfessional.providerStatus || 'pending'
+                                            }}</p>
+                                        <p><strong>Fecha de registro:</strong> {{
+                                            formatDate(selectedProfessional.created) }}</p>
+                                        <p><strong>Fecha de nacimiento:</strong> {{
+                                            formatDate(selectedProfessional.birthdate) }}</p>
+                                        <p><strong>Genero:</strong> {{ selectedProfessional.gender || 'No disponible' }}
+                                        </p>
+                                        <p><strong>Número de habilitación:</strong> {{
+                                            selectedProfessional.habilitacionNumber || 'No disponible' }}</p>
                                     </div>
                                 </div>
 
@@ -240,7 +234,7 @@
                                     <div class="detail-card" *ngIf="selectedProfessional.modalidadAtencion">
                                         <h5>Modalidad de atención</h5>
                                         <ul>
-                                        <li>{{ selectedProfessional.modalidadAtencion }}</li>
+                                            <li>{{ selectedProfessional.modalidadAtencion }}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -272,4 +266,3 @@
         <span class="fa fa-arrow-up"></span>
     </button>
 </div>
-
