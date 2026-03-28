@@ -54,56 +54,14 @@ private loadingProfessionals = false;
   getCurrentUserId(): string | undefined {
     return this.auth.pb.authStore.model?.id;
   }
+updateProfessionalInState(id: string, changes: Partial<Professional>) {
+  const updated = this._professionals$.value.map(item =>
+    item.id === id ? { ...item, ...changes } : item
+  );
 
+  this._professionals$.next(updated);
+}
 
-/* async loadProfessionals(): Promise<void> {
-  console.log('🔍 Cargando profesionales...');
-
-  try {
-    const records = await this.auth.pb.collection(this.collection).getFullList<Professional>({
-      filter: '(role = "proveedor" || role = "experto")',
-      sort: '-created',
-      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created'
-    });
-
-    console.log('✅ Registros crudos encontrados:', records);
-
-    const processed = records.map((u: any) => ({
-      id: u.id,
-      name: u.name || 'Profesional',
-      email: u.email,
-      avatarFile: u.avatarFile,
-      profession: u.profession,
-      businessName: u.businessName,
-      providerStatus: u.providerStatus,
-      phone: u.phone,
-      category: u.category,
-      especialidades: this.parseJson(u.especialidades),
-      modalidadAtencion: this.parseJson(u.modalidadAtencion),
-      zonaAtencion: this.parseJson(u.zonaAtencion),
-      rating: 0,
-      price: u.price || Math.floor(Math.random() * 30) + 20,
-      lat: Number(u.lat),
-      lng: Number(u.lng),
-      isOnline: !!u.isOnline,
-      description: u.description,
-      Biography: u.Biography,
-      gender: u.gender,
-      created: u.created
-    }));
-
-    console.log('✅ Profesionales procesados:', processed);
-    this._professionals$.next(processed);
-  } catch (error: any) {
-    console.error('❌ Error cargando profesionales:', error);
-    console.error('📋 error.response:', error?.response);
-    console.error('📋 error.data:', error?.data);
-
-    if (!this._professionals$.value.length) {
-      this._professionals$.next([]);
-    }
-  }
-} */
 async loadProfessionals(): Promise<void> {
   if (this.loadingProfessionals) {
     console.log('⏳ loadProfessionals cancelado: ya hay una carga en curso');
@@ -119,7 +77,7 @@ async loadProfessionals(): Promise<void> {
       filter: '(role = "proveedor" || role = "experto")',
       sort: '-created',
       requestKey: null,
-      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber'
+      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber,birthdate'
     });
 
     console.log('✅ Registros encontrados:', records);
@@ -147,7 +105,8 @@ async loadProfessionals(): Promise<void> {
       gender: u.gender,
       created: u.created,
       habilitacionNumber: u.habilitacionNumber,
-      docNumber: u.docNumber
+      docNumber: u.docNumber,
+      birthdate: u.birthdate
     }));
 
     console.log('✅ Profesionales procesados:', processed);
@@ -226,7 +185,7 @@ async loadProfessionals(): Promise<void> {
   }
 
 
-  async updateProfessionalStatus(id: string, data: Partial<Professional>) {
+  /* async updateProfessionalStatus(id: string, data: Partial<Professional>) {
     try {
       const userId = id || pb.authStore.model?.id;
       if (!userId) throw new Error('No se encontró el ID del usuario autenticado');
@@ -250,9 +209,46 @@ async loadProfessionals(): Promise<void> {
       console.error('❌ Error en updateProfessional:', err);
       throw err;
     }
-  }
+  } */
 
-  getNearbyProfessionals(lat: number, lng: number, radiusKm: number) {
+ async updateProfessionalStatus(id: string, data: Partial<Professional>) {
+  try {
+    if (!id) {
+      throw new Error('No se recibió el ID del profesional');
+    }
+
+    console.log('📝 Actualizando usuario con ID:', id, 'Datos:', data);
+
+    const updated = await this.auth.pb.collection('users').update(id, data);
+
+    console.log('✅ Usuario actualizado:', updated);
+
+    return updated;
+  } catch (err) {
+    console.error('❌ Error en updateProfessionalStatus:', err);
+    throw err;
+  }
+}
+
+async updateProfessional(id: string, data: any) {
+  try {
+    if (!id) {
+      throw new Error('No se recibió el ID del profesional');
+    }
+
+    console.log('📝 Actualizando profesional con ID:', id, 'Datos:', data);
+
+    const updated = await this.auth.pb.collection('users').update(id, data);
+
+    console.log('✅ Profesional actualizado:', updated);
+
+    return updated;
+  } catch (err) {
+    console.error('❌ Error en updateProfessional:', err);
+    throw err;
+  }
+}
+    getNearbyProfessionals(lat: number, lng: number, radiusKm: number) {
     const professionals = this._professionals$.value;
 
     console.log('📦 Total de profesionales en memoria:', professionals.length);
@@ -331,7 +327,7 @@ async loadProfessionals(): Promise<void> {
 
   // ✅ Obtener usuario autenticado (para el mapa o solicitudes)
   getCurrentUser() {
-    return pb.authStore.model;
+    return this.auth.pb.authStore.model;
   }
 
   // ✅ Verificar si el paciente tiene una solicitud pendiente
@@ -350,7 +346,7 @@ async loadProfessionals(): Promise<void> {
         if (e.action === 'create') {
           const appointment = e.record;
           // Si el profesional autenticado es el asignado:
-          if (appointment['professional'] === pb.authStore.model?.id) {
+          if (appointment['professional'] === this.auth.pb.authStore.model?.id) {
             console.log('🆕 Nueva solicitud recibida:', appointment);
             // Aquí puedes emitir un EventEmitter o signal para actualizar UI
           }
@@ -358,7 +354,7 @@ async loadProfessionals(): Promise<void> {
 
         if (e.action === 'update') {
           const appointment = e.record;
-          if (appointment['patient'] === pb.authStore.model?.id) {
+          if (appointment['patient'] === this.auth.pb.authStore.model?.id) {
             console.log('📢 Tu solicitud cambió de estado:', appointment['status']);
             // Puedes lanzar una notificación o cambiar vista
           }
@@ -428,7 +424,7 @@ async loadProfessionals(): Promise<void> {
 
   /** 🔥 Obtiene ubicación del paciente + calcula distancia al profesional */
   async getDistanceToProfessional(proId: string) {
-    const user = pb.authStore.model;
+    const user = this.auth.pb.authStore.model;
 
     if (!user) throw new Error("Usuario no autenticado");
 
@@ -475,7 +471,7 @@ async loadProfessionals(): Promise<void> {
   }
   /** 📍 Obtener ubicación del usuario con fallback */
   async getUserLocation(): Promise<{ lat: number; lng: number }> {
-    const user = pb.authStore.model;
+    const user = this.auth.pb.authStore.model;
 
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
