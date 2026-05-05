@@ -3,11 +3,13 @@ import { ProfessionalsService, Professional } from '../../services/professionals
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
+import { PatientsService } from '../../services/patients.service';
+import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminSidebar],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
@@ -18,10 +20,12 @@ export class Home implements OnInit, OnDestroy {
   isReady = false;
   selectedProfessional: Professional | null = null;
   isModalOpen = false;
+  patients: any[] = [];
 
   constructor(
     private professionalsService: ProfessionalsService,
     private auth: AuthPocketbaseService,
+    private patientsService: PatientsService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -34,10 +38,18 @@ export class Home implements OnInit, OnDestroy {
       }
     );
 
+    this.subscription = this.patientsService.patients$.subscribe(
+      (patients) => {
+        this.patients = patients;
+        console.log('📦 Pacientes recibidos en Home:', patients);
+        this.cdr.detectChanges();
+      }
+    );
     this.isReady = true;
 
     setTimeout(() => {
       this.professionalsService.loadProfessionals();
+      this.patientsService.loadPatients();
     }, 300);
   }
 

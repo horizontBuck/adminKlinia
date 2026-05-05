@@ -1,0 +1,56 @@
+<div class="left-panel">
+  <div class="profile-box">
+    <div class="upper-box">
+      <figure class="profile-image">
+        <img src="assets/images/resource/profile-2.png" alt="Administrador">
+      </figure>
+
+      <div class="title-box centred">
+        <div class="inner">
+          <h3>Administrador</h3>
+          <p>Klinia</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <ul class="list clearfix">
+        <li>
+          <a routerLink="/home" routerLinkActive="current">
+            <i class="fas fa-columns"></i>Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/admin/solicitudes" routerLinkActive="current">
+            <i class="fas fa-calendar-alt"></i>Solicitudes
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/home" routerLinkActive="current">
+            <i class="fas fa-wheelchair"></i>Profesionales
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/clients" routerLinkActive="current">
+            <i class="fas fa-plus-circle"></i>Pacientes
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/admin/reviews" routerLinkActive="current">
+            <i class="fas fa-star"></i>Reviews
+          </a>
+        </li>
+
+        <li>
+          <a href="#" (click)="logout($event)">
+            <i class="fas fa-sign-out-alt"></i>Salir
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+ <section class="doctors-dashboard bg-color-3">
+              <app-admin-sidebar></app-admin-sidebar>
+
+        <div class="right-panel">
+            <div class="content-container">
+                <div class="outer-container">
+                    
+                    <div class="doctors-appointment">
+                        <div class="title-box">
+                            <h3>Pacientes Registrados</h3>
+                        </div>
+                        <div class="doctors-list">
+                            <div class="table-outer">
+                                <table class="doctors-table">
+                                    <thead class="table-header">
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Fecha de registro</th>
+                                            <th>Correo</th>
+                                            <th>Telefono</th>
+                                            <th>&nbsp;</th>
+                                            <th>&nbsp;</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let patient of patients; trackBy: trackByPatientId">
+                                            <td>
+                                                <div class="name-box">
+                                                    <figure class="image" style="top: 10px;">
+                                                        <img [src]="getAvatarUrl(patient)"
+                                                            [alt]="patient.name">
+                                                    </figure>
+                                                    <span class="designation">{{ patient.name }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <p>{{ formatDate(patient.created) }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ patient.email }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ patient.phone }}</p>
+                                            </td>
+                                           
+                                        </tr>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
