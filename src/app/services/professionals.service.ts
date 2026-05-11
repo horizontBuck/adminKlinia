@@ -29,6 +29,10 @@ export interface Professional {
   birthdate?: string;
   habilitacionNumber?: string;
   docNumber?: string;
+  certifications?: any[];
+  certificationFileUrl?: string;
+certificationFile?: any;
+documents?: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -73,13 +77,13 @@ async loadProfessionals(): Promise<void> {
   console.log('👤 Usuario autenticado actual:', this.auth.pb.authStore.model);
 
   try {
-    const records = await this.auth.pb.collection(this.collection).getFullList<Professional>({
-      filter: '(role = "proveedor" || role = "experto")',
-      sort: '-created',
-      requestKey: null,
-      fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber,birthdate'
-    });
-
+  const records = await this.auth.pb.collection(this.collection).getFullList<any>({
+  filter: '(role = "proveedor" || role = "experto")',
+  sort: '-created',
+  requestKey: null,
+  expand: 'certificationFileUrl',
+  fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber,birthdate,certificationFileUrl,certifications,documents,expand.certificationFileUrl'
+});
     console.log('✅ Registros encontrados:', records);
 
     const processed = records.map((u: any) => ({
@@ -106,7 +110,11 @@ async loadProfessionals(): Promise<void> {
       created: u.created,
       habilitacionNumber: u.habilitacionNumber,
       docNumber: u.docNumber,
-      birthdate: u.birthdate
+      birthdate: u.birthdate,
+      certificationFileUrl: u.certificationFileUrl,
+certificationFile: u.expand?.certificationFileUrl,
+certifications: u.certifications,
+documents: u.documents,
     }));
 
     console.log('✅ Profesionales procesados:', processed);

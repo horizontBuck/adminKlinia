@@ -1,6 +1,6 @@
 <div class="boxed_wrapper">
 
-     <!-- doctors-dashboard -->
+    <!-- doctors-dashboard -->
     <section class="doctors-dashboard bg-color-3">
         <app-admin-sidebar></app-admin-sidebar>
         <div class="right-panel">
@@ -68,15 +68,18 @@
                                         <tr>
                                             <th>Nombre</th>
                                             <th>Fecha de registro</th>
-                                            <th>Correo</th>
                                             <th>Estado</th>
                                             <th>&nbsp;</th>
                                             <th>&nbsp;</th>
-                                            <th>&nbsp;</th>
+                                            <th>Acciones</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let professional of professionals; trackBy: trackByProfessionalId">
+                                            <td>
+                                                <p>{{ formatDate(professional.created) }}</p>
+                                            </td>
                                             <td>
                                                 <div class="name-box">
                                                     <figure class="image">
@@ -86,12 +89,7 @@
                                                     <span class="designation">{{ professional.name }}</span>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <p>{{ formatDate(professional.created) }}</p>
-                                            </td>
-                                            <td>
-                                                <p>{{ professional.email }}</p>
-                                            </td>
+
                                             <td>
                                                 <p>{{ professional.providerStatus || 'pending' }}</p>
                                             </td>
@@ -102,7 +100,7 @@
                                                     {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Aprobar' }}
                                                 </button>
                                             </td>
-                                            .
+
                                             <td>
                                                 <button type="button" class="cancel"
                                                     (click)="rejectProfessional(professional)"
@@ -116,6 +114,7 @@
                                                     [disabled]="loadingIds.has(professional.id)">
                                                     Ver
                                                 </button>
+
                                             </td>
 
                                         </tr>
@@ -138,7 +137,6 @@
                                     ×
                                 </button>
                             </div>
-                            .
                             <div class="custom-modal-body">
                                 <div class="professional-detail-top">
                                     <img class="professional-avatar" [src]="getAvatarUrl(selectedProfessional)"
@@ -197,6 +195,27 @@
                                 <div class="detail-card full-width" *ngIf="selectedProfessional.Biography">
                                     <h5>Biografía</h5>
                                     <p>{{ selectedProfessional.Biography }}</p>
+                                </div>
+                                <div class="detail-card full-width">
+                                    <h5>Certificados / Documentos</h5>
+
+                                    <ng-container
+                                        *ngIf="getProfessionalDocuments(selectedProfessional).length > 0; else noDocuments">
+                                        <div class="documents-list">
+                                            <div class="document-item"
+                                                *ngFor="let doc of getProfessionalDocuments(selectedProfessional)">
+                                                <span>{{ doc.label }}</span>
+
+                                               <a [href]="doc.url" target="_blank" rel="noopener noreferrer" class="view">
+  Ver
+</a>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+
+                                    <ng-template #noDocuments>
+                                        <p>No hay documentos cargados.</p>
+                                    </ng-template>
                                 </div>
                             </div>
 

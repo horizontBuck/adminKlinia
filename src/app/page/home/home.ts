@@ -131,14 +131,56 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  viewProfessional(professional: Professional): void {
+  /* viewProfessional(professional: Professional): void {
     this.selectedProfessional = professional;
     this.isModalOpen = true;
     console.log('👁️ Ver detalles del profesional:', professional);
-  }
+  } */
+viewProfessional(professional: any): void {
+  this.selectedProfessional = professional;
+  this.isModalOpen = true;
 
+  console.log('👁️ Profesional completo:', professional);
+  console.log('📄 certifications:', professional.certifications);
+  console.log('📄 certificationFileUrl:', professional.certificationFileUrl);
+}
   closeProfessionalModal(): void {
     this.isModalOpen = false;
     this.selectedProfessional = null;
   }
+  getProfessionalFileUrl(professional: any, fileName: string): string {
+  return `${this.auth.pb.baseURL}/api/files/users/${professional.id}/${fileName}`;
+}
+
+getProfessionalDocuments(professional: any): { label: string; fileName: string; url: string }[] {
+  if (!professional) return [];
+
+  const docs: { label: string; fileName: string; url: string }[] = [];
+
+  const addImageRecord = (label: string, imageRecord: any) => {
+    if (!imageRecord?.id || !imageRecord?.image) return;
+
+    docs.push({
+      label,
+      fileName: imageRecord.image,
+      url: `${this.auth.pb.baseURL}/api/files/images/${imageRecord.id}/${imageRecord.image}`
+    });
+  };
+
+  // certificationFileUrl expandido desde la colección images
+  if (professional.certificationFile) {
+    addImageRecord('Certificación profesional', professional.certificationFile);
+  }
+
+  // Si certifications guarda varios registros images expandidos
+  if (Array.isArray(professional.certifications)) {
+    professional.certifications.forEach((cert: any, index: number) => {
+      if (cert?.id && cert?.image) {
+        addImageRecord(`Certificación ${index + 1}`, cert);
+      }
+    });
+  }
+
+  return docs;
+}
 }
