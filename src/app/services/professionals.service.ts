@@ -113,8 +113,8 @@ async loadProfessionals(): Promise<void> {
       birthdate: u.birthdate,
       certificationFileUrl: u.certificationFileUrl,
 certificationFile: u.expand?.certificationFileUrl,
-certifications: u.certifications,
-documents: u.documents,
+certifications: this.parseJson(u.certifications),
+documents: this.parseJson(u.documents),
     }));
 
     console.log('✅ Profesionales procesados:', processed);
@@ -138,34 +138,21 @@ documents: u.documents,
 
 
   /** 🔹 Convertir campos JSON de PocketBase en arrays seguros */
-  private parseJson(value: any): any[] {
-    if (!value) return [];
-    try {
-      return typeof value === 'string' ? JSON.parse(value) : value;
-    } catch {
-      return [];
-    }
+ private parseJson(value: any): any[] {
+  if (!value) return [];
+
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+
+    if (Array.isArray(parsed)) return parsed;
+
+    if (typeof parsed === 'object') return [parsed];
+
+    return [];
+  } catch {
+    return [];
   }
-
-  /* getAvatarUrl(user: any): string {
-    try {
-      if (!user || !user.avatarFile) {
-        return 'assets/img/avatar.png';
-      }
-
-      return pb.files.getURL(
-        {
-          collectionId: 'users',
-          id: user.id
-        },
-        user.avatarFile
-      );
-
-    } catch (e) {
-      return 'assets/img/avatar.png';
-    }
-  } */
-
+}
 
   /** 🔹 Suscripción realtime (Server-Sent Events) */
   async subscribeRealtime(): Promise<void> {

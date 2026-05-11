@@ -200,17 +200,67 @@
                                     <h5>Certificados / Documentos</h5>
 
                                     <ng-container
-                                        *ngIf="getProfessionalDocuments(selectedProfessional).length > 0; else noDocuments">
-                                        <div class="documents-list">
+                                        *ngIf="hasProfessionalCertifications(selectedProfessional); else noDocuments">
+
+                                        <!-- Archivo principal desde certificationFileUrl -->
+                                        <div class="documents-list"
+                                            *ngIf="getProfessionalDocuments(selectedProfessional).length > 0">
                                             <div class="document-item"
                                                 *ngFor="let doc of getProfessionalDocuments(selectedProfessional)">
                                                 <span>{{ doc.label }}</span>
 
-                                               <a [href]="doc.url" target="_blank" rel="noopener noreferrer" class="view">
-  Ver
-</a>
+                                                <a [href]="doc.url" target="_blank" rel="noopener noreferrer"
+                                                    class="view">
+                                                    Ver
+                                                </a>
                                             </div>
                                         </div>
+
+                                        <!-- Certificaciones JSON -->
+                                        <div class="documents-list" *ngIf="selectedProfessional.certifications?.length">
+                                            <div class="document-item"
+                                                *ngFor="let cert of selectedProfessional.certifications; let i = index">
+                                                <div>
+                                                    <strong>
+                                                        {{ cert.name || cert.title || cert.certificationName ||
+                                                        cert.nombre || ('Certificación ' + (i + 1)) }}
+                                                    </strong>
+
+                                                    <p
+                                                        *ngIf="cert.certificationInstitution || cert.certificationInstitution">
+                                                        Institución: {{ cert.certificationInstitution ||
+                                                        cert.certificationInstitution }}
+                                                    </p>
+
+                                                    <p *ngIf="cert.certificationYear || cert.certificationYear">
+                                                        Año: {{ cert.certificationYear || cert.certificationYear }}
+                                                    </p>
+                                                    <img
+      *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
+      [src]="getCertificationFileUrl(cert)"
+      alt="Certificación"
+      style="max-width: 180px; border-radius: 8px; margin-top: 8px;"
+    >
+
+    <a
+      *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
+      [href]="getCertificationFileUrl(cert)"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="view"
+    >
+      Ver
+    </a>
+                                                </div>
+
+                                                <a *ngIf="getCertificationJsonUrl(selectedProfessional, cert)"
+                                                    [href]="getCertificationJsonUrl(selectedProfessional, cert)"
+                                                    target="_blank" rel="noopener noreferrer" class="view">
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </div>
+
                                     </ng-container>
 
                                     <ng-template #noDocuments>

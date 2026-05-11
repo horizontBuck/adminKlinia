@@ -21,7 +21,8 @@ export class Home implements OnInit, OnDestroy {
   selectedProfessional: Professional | null = null;
   isModalOpen = false;
   patients: any[] = [];
-
+  imageCache: Record<string, any> = {};
+imageUrlCache: Record<string, string> = {};
   constructor(
     private professionalsService: ProfessionalsService,
     private auth: AuthPocketbaseService,
@@ -167,20 +168,99 @@ getProfessionalDocuments(professional: any): { label: string; fileName: string; 
     });
   };
 
-  // certificationFileUrl expandido desde la colección images
+  const addUserFile = (label: string, fileName: string) => {
+    if (!fileName) return;
+
+    docs.push({
+      label,
+      fileName,
+      url: fileName.startsWith('http')
+        ? fileName
+        : `${this.auth.pb.baseURL}/api/files/users/${professional.id}/${fileName}`
+    });
+  };
+
   if (professional.certificationFile) {
     addImageRecord('Certificación profesional', professional.certificationFile);
   }
 
-  // Si certifications guarda varios registros images expandidos
   if (Array.isArray(professional.certifications)) {
     professional.certifications.forEach((cert: any, index: number) => {
-      if (cert?.id && cert?.image) {
-        addImageRecord(`Certificación ${index + 1}`, cert);
+      const label =
+        cert.name ||
+        cert.title ||
+        cert.certificationName ||
+        cert.institution ||
+        `Certificación ${index + 1}`;
+
+      const fileName =
+        cert.file ||
+        cert.fileName ||
+        cert.document ||
+        cert.archivo ||
+        cert.certificado ||
+        cert.image;
+
+      if (fileName) {
+        addUserFile(label, fileName);
       }
     });
   }
 
   return docs;
 }
+hasProfessionalCertifications(professional: any): boolean {
+  return (
+    this.getProfessionalDocuments(professional).length > 0 ||
+    (Array.isArray(professional?.certifications) && professional.certifications.length > 0)
+  );
 }
+
+getCertificationJsonUrl(professional: any, cert: any): string | null {
+  if (!professional || !cert) return null;
+
+  const fileName =
+    cert.file ||
+    cert.fileName ||
+    cert.document ||
+    cert.archivo ||
+    cert.certificado ||
+    cert.image ||
+    cert.url;
+
+  if (!fileName) return null;
+
+  if (typeof fileName === 'string' && fileName.startsWith('http')) {
+    return fileName;
+  }
+
+  return `${this.auth.pb.baseURL}/api/files/users/${professional.id}/${fileName}`;
+}
+async loadCertificationImage(imageId: string): Promise<void> {
+  if (!imageId || this.imageUrlCache[imageId]) return;
+
+  try {
+    const imageRecord = await this.auth.pb.collection('images').getOne(imageId);
+
+    this.imageCache[imageId] = imageRecord;
+
+    this.imageUrlCache[imageId] =
+      `${this.auth.pb.baseURL}/api/files/images/${imageRecord.id}/${imageRecord['image']}`;
+
+    this.cdr.detectChanges();
+  } catch (error) {
+    console.error('❌ Error cargando imagen de certificación:', error);
+  }
+}
+getCertificationFileUrl(cert: any): string {
+  const imageId = cert?.certificationFileUrl;
+
+  if (!imageId) return '';
+
+  if (!this.imageUrlCache[imageId]) {
+    this.loadCertificationImage(imageId);
+    return '';
+  }
+
+  return this.imageUrlCache[imageId];
+}}
