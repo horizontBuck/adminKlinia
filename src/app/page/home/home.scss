@@ -19,13 +19,13 @@
   opacity: 1 !important;
   color: #222 !important;
   background: #fff !important;
-  padding: 14px 12px !important;
+  /* padding: 14px 12px !important; */
   border-bottom: 1px solid #e5e5e5 !important;
   vertical-align: middle !important;
 }
 
 .doctors-table .name-box {
-  display: flex !important;
+  display: table-caption !important;
   align-items: center !important;
   gap: 12px !important;
 }
@@ -268,4 +268,29 @@
 
 .document-item span {
   font-weight: 500;
+}
+
+.document-preview-card {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.document-preview-card h6 {
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.document-preview-image {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.document-actions {
+  margin-top: 10px;
 }

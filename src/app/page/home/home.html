@@ -67,19 +67,17 @@
                                     <thead class="table-header">
                                         <tr>
                                             <th>Nombre</th>
-                                            <th>Fecha de registro</th>
-                                            <th>Estado</th>
-                                            <th>&nbsp;</th>
-                                            <th>&nbsp;</th>
+<!--                                             <th>Fecha de registro</th>
+ -->                                            <th>Estado</th>
                                             <th>Acciones</th>
 
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let professional of professionals; trackBy: trackByProfessionalId">
-                                            <td>
+                                            <!-- <td>
                                                 <p>{{ formatDate(professional.created) }}</p>
-                                            </td>
+                                            </td> -->
                                             <td>
                                                 <div class="name-box">
                                                     <figure class="image">
@@ -260,6 +258,7 @@
                                                 </a>
                                             </div>
                                         </div>
+                                        
 
                                     </ng-container>
 
@@ -267,6 +266,28 @@
                                         <p>No hay documentos cargados.</p>
                                     </ng-template>
                                 </div>
+     <div
+  class="documents-list"
+  *ngIf="getDocumentsArray(selectedProfessional).length > 0">
+
+  <div
+    class="document-preview-card"
+    *ngFor="let doc of getDocumentsArray(selectedProfessional)">
+
+    <h6>{{ doc.label }}</h6>
+
+    <img
+      [src]="doc.url"
+      [alt]="doc.label"
+      class="document-preview-image">
+
+  </div>
+
+</div>
+
+<p *ngIf="getDocumentsArray(selectedProfessional).length === 0">
+  No hay documentos cargados.
+</p>
                             </div>
 
                             <div class="custom-modal-footer">

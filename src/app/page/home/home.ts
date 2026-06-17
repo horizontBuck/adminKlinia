@@ -34,7 +34,6 @@ imageUrlCache: Record<string, string> = {};
     this.subscription = this.professionalsService.professionals$.subscribe(
       (professionals) => {
         this.professionals = professionals;
-        console.log('📦 Profesionales recibidos en Home:', professionals);
         this.cdr.detectChanges();
       }
     );
@@ -42,7 +41,6 @@ imageUrlCache: Record<string, string> = {};
     this.subscription = this.patientsService.patients$.subscribe(
       (patients) => {
         this.patients = patients;
-        console.log('📦 Pacientes recibidos en Home:', patients);
         this.cdr.detectChanges();
       }
     );
@@ -95,9 +93,7 @@ imageUrlCache: Record<string, string> = {};
         providerStatus: 'approved'
       });
 
-      console.log(`✅ Profesional ${professional.name} aprobado`, updated);
     } catch (error) {
-      console.error('❌ Error al aceptar profesional:', error);
     } finally {
       const next = new Set(this.loadingIds);
       next.delete(professional.id);
@@ -121,9 +117,7 @@ imageUrlCache: Record<string, string> = {};
         providerStatus: 'rejected'
       });
 
-      console.log(`⛔ Profesional ${professional.name} rechazado`, updated);
     } catch (error) {
-      console.error('❌ Error al rechazar profesional:', error);
     } finally {
       const next = new Set(this.loadingIds);
       next.delete(professional.id);
@@ -132,18 +126,11 @@ imageUrlCache: Record<string, string> = {};
     }
   }
 
-  /* viewProfessional(professional: Professional): void {
-    this.selectedProfessional = professional;
-    this.isModalOpen = true;
-    console.log('👁️ Ver detalles del profesional:', professional);
-  } */
+ 
 viewProfessional(professional: any): void {
   this.selectedProfessional = professional;
   this.isModalOpen = true;
 
-  console.log('👁️ Profesional completo:', professional);
-  console.log('📄 certifications:', professional.certifications);
-  console.log('📄 certificationFileUrl:', professional.certificationFileUrl);
 }
   closeProfessionalModal(): void {
     this.isModalOpen = false;
@@ -249,7 +236,6 @@ async loadCertificationImage(imageId: string): Promise<void> {
 
     this.cdr.detectChanges();
   } catch (error) {
-    console.error('❌ Error cargando imagen de certificación:', error);
   }
 }
 getCertificationFileUrl(cert: any): string {
@@ -263,4 +249,62 @@ getCertificationFileUrl(cert: any): string {
   }
 
   return this.imageUrlCache[imageId];
-}}
+}
+
+getDocumentsArray(professional: any): { label: string; url: string }[] {
+  let documents = professional?.documents;
+
+  if (!documents) return [];
+
+  if (typeof documents === 'string') {
+    documents = this.safeJsonParse(documents);
+  }
+
+  if (Array.isArray(documents)) {
+    documents = documents[0];
+  }
+
+  if (!documents || typeof documents !== 'object') return [];
+
+  return Object.entries(documents)
+    .map(([key, value]: any) => {
+      const url = value?.fileUrl || value?.url || value?.file;
+
+      if (!url) return null;
+
+      return {
+        label: this.formatDocumentName(key),
+        url
+      };
+    })
+    .filter((doc): doc is { label: string; url: string } => !!doc);
+}
+
+safeJsonParse(value: string): any {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+formatDocumentName(key: string): string {
+  const labels: Record<string, string> = {
+    cv: 'Hoja de vida',
+    diploma: 'Diploma',
+    rethus: 'RETHUS',
+    doc: 'Documento',
+    documento: 'Documento',
+    habilitacion: 'Habilitación',
+    tarjeta_profesional: 'Tarjeta profesional'
+  };
+
+  return labels[key] || key;
+}
+
+previewUrl = '';
+
+previewImage(url: string) {
+  this.previewUrl = url;
+}
+}

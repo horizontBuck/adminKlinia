@@ -6892,12 +6892,12 @@ div#mCSB_1_container{
 
 .left-panel{
   position: absolute;
-  left: 50px;
+  left: 20px;
   top: 50px;
 }
 
 .profile-box{
-  width: 375px;
+  width: 270px;
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
@@ -7000,7 +7000,7 @@ div#mCSB_1_container{
 }
 
 .right-panel .content-container{
-  margin-left: 420px;
+  margin-left: 260px;
 }
 
 .feature-block-two .inner-box{
@@ -7115,6 +7115,7 @@ div#mCSB_1_container{
 .doctors-appointment .doctors-table .table-header{
   position: relative;
   background: #f4f7f7;
+  text-align: justify;
 }
 
 .doctors-appointment .doctors-table tr{
