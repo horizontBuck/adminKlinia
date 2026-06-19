@@ -33,6 +33,7 @@ export interface Professional {
   certificationFileUrl?: string;
 certificationFile?: any;
 documents?: string[];
+  profileCompletion?: number;
 }
 
 @Injectable({ providedIn: 'root' })

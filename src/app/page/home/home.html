@@ -67,8 +67,9 @@
                                     <thead class="table-header">
                                         <tr>
                                             <th>Nombre</th>
-<!--                                             <th>Fecha de registro</th>
- -->                                            <th>Estado</th>
+                                            <!--                                             <th>Fecha de registro</th>
+ -->
+                                            <th>Estado</th>
                                             <th>Acciones</th>
 
                                         </tr>
@@ -85,9 +86,28 @@
                                                             [alt]="professional.name">
                                                     </figure>
                                                     <span class="designation">{{ professional.name }}</span>
+
                                                 </div>
                                             </td>
+                                            <td>
+  <span class="completion-badge">
+    {{ professional.profileCompletion ?? 0 }}%
+  </span>
+</td>
 
+<td>
+  <ng-container *ngIf="!professional.loadingProfile">
+    <span *ngIf="getMissingItems(professional).length === 0">
+      Perfil completo
+    </span>
+
+    <span *ngIf="getMissingItems(professional).length > 0">
+      Falta: {{ getMissingItems(professional).join(', ') }}
+    </span>
+  </ng-container>
+
+  <span *ngIf="professional.loadingProfile">Cargando...</span>
+</td>
                                             <td>
                                                 <p>{{ professional.providerStatus || 'pending' }}</p>
                                             </td>
@@ -233,22 +253,15 @@
                                                     <p *ngIf="cert.certificationYear || cert.certificationYear">
                                                         Año: {{ cert.certificationYear || cert.certificationYear }}
                                                     </p>
-                                                    <img
-      *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
-      [src]="getCertificationFileUrl(cert)"
-      alt="Certificación"
-      style="max-width: 180px; border-radius: 8px; margin-top: 8px;"
-    >
+                                                    <img *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
+                                                        [src]="getCertificationFileUrl(cert)" alt="Certificación"
+                                                        style="max-width: 180px; border-radius: 8px; margin-top: 8px;">
 
-    <a
-      *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
-      [href]="getCertificationFileUrl(cert)"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="view"
-    >
-      Ver
-    </a>
+                                                    <a *ngIf="cert.certificationFileUrl && getCertificationFileUrl(cert)"
+                                                        [href]="getCertificationFileUrl(cert)" target="_blank"
+                                                        rel="noopener noreferrer" class="view">
+                                                        Ver
+                                                    </a>
                                                 </div>
 
                                                 <a *ngIf="getCertificationJsonUrl(selectedProfessional, cert)"
@@ -258,7 +271,7 @@
                                                 </a>
                                             </div>
                                         </div>
-                                        
+
 
                                     </ng-container>
 
@@ -266,28 +279,22 @@
                                         <p>No hay documentos cargados.</p>
                                     </ng-template>
                                 </div>
-     <div
-  class="documents-list"
-  *ngIf="getDocumentsArray(selectedProfessional).length > 0">
+                                <div class="documents-list" *ngIf="getDocumentsArray(selectedProfessional).length > 0">
 
-  <div
-    class="document-preview-card"
-    *ngFor="let doc of getDocumentsArray(selectedProfessional)">
+                                    <div class="document-preview-card"
+                                        *ngFor="let doc of getDocumentsArray(selectedProfessional)">
 
-    <h6>{{ doc.label }}</h6>
+                                        <h6>{{ doc.label }}</h6>
 
-    <img
-      [src]="doc.url"
-      [alt]="doc.label"
-      class="document-preview-image">
+                                        <img [src]="doc.url" [alt]="doc.label" class="document-preview-image">
 
-  </div>
+                                    </div>
 
-</div>
+                                </div>
 
-<p *ngIf="getDocumentsArray(selectedProfessional).length === 0">
-  No hay documentos cargados.
-</p>
+                                <p *ngIf="getDocumentsArray(selectedProfessional).length === 0">
+                                    No hay documentos cargados.
+                                </p>
                             </div>
 
                             <div class="custom-modal-footer">
