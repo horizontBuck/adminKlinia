@@ -1,0 +1,1 @@
+@request.auth.id != "" && is_active = true  @request.auth.id != "" && is_active = true view y list working
