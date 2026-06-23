@@ -187,20 +187,16 @@
                                         <p>{{ selectedProfessional.phone }}</p>
                                     </div>
 
-                                    <div class="detail-card" *ngIf="selectedProfessional.profession">
+                                    <div class="detail-card" *ngIf="selectedProfessional.category">
                                         <h5>Especialidad</h5>
-                                        <p>{{ selectedProfessional.profession }}</p>
-                                    </div>
+<p>{{ getCategoryName(selectedProfessional.category) }}</p>                                    </div>
 
                                     <div class="detail-card" *ngIf="selectedProfessional.businessName">
                                         <h5>Nombre del consultorio</h5>
                                         <p>{{ selectedProfessional.businessName }}</p>
                                     </div>
 
-                                    <div class="detail-card" *ngIf="selectedProfessional.category">
-                                        <h5>Especialidad</h5>
-                                        <p>{{ selectedProfessional.category }}</p>
-                                    </div>
+                                    
 
                                     <div class="detail-card" *ngIf="selectedProfessional.modalidadAtencion">
                                         <h5>Modalidad de atención</h5>

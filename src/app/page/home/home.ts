@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
 import { PatientsService } from '../../services/patients.service';
 import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
+import { Category } from '../../interfaces/category.interface';
+import { CategoriesService } from '../../services/categories.service';
 
 @Component({
   selector: 'app-home',
@@ -23,11 +25,13 @@ export class Home implements OnInit, OnDestroy {
   patients: any[] = [];
   imageCache: Record<string, any> = {};
   imageUrlCache: Record<string, string> = {};
+  categories: Category[] = [];
   constructor(
     private professionalsService: ProfessionalsService,
     private auth: AuthPocketbaseService,
     private patientsService: PatientsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+      private categoriesService: CategoriesService
   ) { }
 
   ngOnInit() {
@@ -46,6 +50,8 @@ export class Home implements OnInit, OnDestroy {
         this.cdr.detectChanges();
 
         this.loadProfessionalsExtraData();
+          this.loadCategories();
+
       })
     );
 
@@ -63,6 +69,27 @@ export class Home implements OnInit, OnDestroy {
       this.patientsService.loadPatients();
     }, 300);
   }
+ loadCategories() {
+  this.categoriesService.listTop().subscribe({
+    next: (categories) => {
+      this.categories = categories;
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error('Error cargando categorías:', error);
+      this.categories = [];
+    },
+  });
+}
+
+getCategoryName(categoryId: string): string {
+  if (!categoryId) return 'Sin categoría';
+
+  return (
+    this.categories.find(c => c.id === categoryId)?.name ||
+    categoryId
+  );
+}
   async loadProfessionalsExtraData() {
     for (const professional of this.professionals) {
       try {
@@ -516,4 +543,5 @@ isImage(url: string): boolean {
 getFileName(url: string): string {
   return decodeURIComponent(url.split('/').pop() || 'Documento');
 }
+
 }
