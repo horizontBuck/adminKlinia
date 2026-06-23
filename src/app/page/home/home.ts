@@ -505,4 +505,15 @@ parseObject(value: any): any {
   previewImage(url: string) {
     this.previewUrl = url;
   }
+  isPdf(url: string): boolean {
+  return /\.pdf(\?|#|$)/i.test(url);
+}
+
+isImage(url: string): boolean {
+  return /\.(jpg|jpeg|png|webp)(\?|#|$)/i.test(url);
+}
+
+getFileName(url: string): string {
+  return decodeURIComponent(url.split('/').pop() || 'Documento');
+}
 }

@@ -90,24 +90,24 @@
                                                 </div>
                                             </td>
                                             <td>
-  <span class="completion-badge">
-    {{ professional.profileCompletion ?? 0 }}%
-  </span>
-</td>
+                                                <span class="completion-badge">
+                                                    {{ professional.profileCompletion ?? 0 }}%
+                                                </span>
+                                            </td>
 
-<td>
-  <ng-container *ngIf="!professional.loadingProfile">
-    <span *ngIf="getMissingItems(professional).length === 0">
-      Perfil completo
-    </span>
+                                            <td>
+                                                <ng-container *ngIf="!professional.loadingProfile">
+                                                    <span *ngIf="getMissingItems(professional).length === 0">
+                                                        Perfil completo
+                                                    </span>
 
-    <span *ngIf="getMissingItems(professional).length > 0">
-      Falta: {{ getMissingItems(professional).join(', ') }}
-    </span>
-  </ng-container>
+                                                    <span *ngIf="getMissingItems(professional).length > 0">
+                                                        Falta: {{ getMissingItems(professional).join(', ') }}
+                                                    </span>
+                                                </ng-container>
 
-  <span *ngIf="professional.loadingProfile">Cargando...</span>
-</td>
+                                                <span *ngIf="professional.loadingProfile">Cargando...</span>
+                                            </td>
                                             <td>
                                                 <p>{{ professional.providerStatus || 'pending' }}</p>
                                             </td>
@@ -235,7 +235,7 @@
                                         </div>
 
                                         <!-- Certificaciones JSON -->
-                                        <div class="documents-list" *ngIf="selectedProfessional.certifications?.length">
+                                        <!-- <div class="documents-list" *ngIf="selectedProfessional.certifications?.length">
                                             <div class="document-item"
                                                 *ngFor="let cert of selectedProfessional.certifications; let i = index">
                                                 <div>
@@ -270,7 +270,7 @@
                                                     Ver
                                                 </a>
                                             </div>
-                                        </div>
+                                        </div> -->
 
 
                                     </ng-container>
@@ -286,7 +286,20 @@
 
                                         <h6>{{ doc.label }}</h6>
 
-                                        <img [src]="doc.url" [alt]="doc.label" class="document-preview-image">
+                                        <p class="small text-muted">
+                                            {{ getFileName(doc.url) }}
+                                        </p>
+
+                                        <img *ngIf="isImage(doc.url)" [src]="doc.url" [alt]="doc.label"
+                                            class="document-preview-image">
+
+                                        <iframe *ngIf="isPdf(doc.url)" [src]="doc.url" width="100%" height="300"
+                                            style="border: 1px solid #ddd; border-radius: 8px;">
+                                        </iframe>
+
+                                        <a [href]="doc.url" target="_blank" rel="noopener noreferrer" class="view">
+                                            Abrir documento
+                                        </a>
 
                                     </div>
 
