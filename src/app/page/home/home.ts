@@ -7,7 +7,7 @@ import { PatientsService } from '../../services/patients.service';
 import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
 import { Category } from '../../interfaces/category.interface';
 import { CategoriesService } from '../../services/categories.service';
-
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -26,12 +26,15 @@ export class Home implements OnInit, OnDestroy {
   imageCache: Record<string, any> = {};
   imageUrlCache: Record<string, string> = {};
   categories: Category[] = [];
+  selectedDocument: { label: string; url: string } | null = null;
+  selectedDocumentSafeUrl: SafeResourceUrl | null = null;
   constructor(
     private professionalsService: ProfessionalsService,
     private auth: AuthPocketbaseService,
     private patientsService: PatientsService,
     private cdr: ChangeDetectorRef,
-      private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit() {
@@ -50,7 +53,7 @@ export class Home implements OnInit, OnDestroy {
         this.cdr.detectChanges();
 
         this.loadProfessionalsExtraData();
-          this.loadCategories();
+        this.loadCategories();
 
       })
     );
@@ -69,73 +72,73 @@ export class Home implements OnInit, OnDestroy {
       this.patientsService.loadPatients();
     }, 300);
   }
- loadCategories() {
-  this.categoriesService.listTop().subscribe({
-    next: (categories) => {
-      this.categories = categories;
-      this.cdr.detectChanges();
-    },
-    error: (error) => {
-      console.error('Error cargando categorías:', error);
-      this.categories = [];
-    },
-  });
-}
+  loadCategories() {
+    this.categoriesService.listTop().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error cargando categorías:', error);
+        this.categories = [];
+      },
+    });
+  }
 
-getCategoryName(categoryId: string): string {
-  if (!categoryId) return 'Sin categoría';
+  getCategoryName(categoryId: string): string {
+    if (!categoryId) return 'Sin categoría';
 
-  return (
-    this.categories.find(c => c.id === categoryId)?.name ||
-    categoryId
-  );
-}
+    return (
+      this.categories.find(c => c.id === categoryId)?.name ||
+      categoryId
+    );
+  }
   async loadProfessionalsExtraData() {
     for (const professional of this.professionals) {
       try {
         const [services, payments] = await Promise.all([
-  this.auth.pb.collection('services').getFullList({
-    filter: `idUser="${professional.id}"`,
-  }),
+          this.auth.pb.collection('services').getFullList({
+            filter: `idUser="${professional.id}"`,
+          }),
 
-  this.auth.pb.collection('payments').getFullList({
-    filter: `idUser="${professional.id}"`,
-  }),
-]);
+          this.auth.pb.collection('payments').getFullList({
+            filter: `idUser="${professional.id}"`,
+          }),
+        ]);
 
-let workingHours = await this.auth.pb.collection('working_hours').getFullList({
-  filter: `user="${professional.id}"`,
-});
+        let workingHours = await this.auth.pb.collection('working_hours').getFullList({
+          filter: `user="${professional.id}"`,
+        });
 
-if (workingHours.length === 0) {
-  workingHours = await this.auth.pb.collection('working_hours').getFullList({
-    filter: `user.id="${professional.id}"`,
-  });
-}
+        if (workingHours.length === 0) {
+          workingHours = await this.auth.pb.collection('working_hours').getFullList({
+            filter: `user.id="${professional.id}"`,
+          });
+        }
 
-console.log('PRO:', professional.name, professional.id);
-console.log('HORARIOS:', workingHours);
-const fullProfessional = await this.auth.pb
-  .collection('users')
-  .getOne(professional.id);
+        console.log('PRO:', professional.name, professional.id);
+        console.log('HORARIOS:', workingHours);
+        const fullProfessional = await this.auth.pb
+          .collection('users')
+          .getOne(professional.id);
 
-const completion = this.calculateLocalCompletion(
-  fullProfessional,
-  services,
-  payments,
-  workingHours
-);
+        const completion = this.calculateLocalCompletion(
+          fullProfessional,
+          services,
+          payments,
+          workingHours
+        );
 
-Object.assign(professional, {
-  ...fullProfessional,
-  services,
-  payments,
-  workingHours,
-  profileCompletion: completion.percentage,
-  completionStatus: completion.status,
-  loadingProfile: false,
-});
-      
+        Object.assign(professional, {
+          ...fullProfessional,
+          services,
+          payments,
+          workingHours,
+          profileCompletion: completion.percentage,
+          completionStatus: completion.status,
+          loadingProfile: false,
+        });
+
 
         this.cdr.detectChanges();
 
@@ -148,65 +151,65 @@ Object.assign(professional, {
     }
   }
   getMissingItems(professional: any): string[] {
-  const status = professional?.completionStatus || {};
+    const status = professional?.completionStatus || {};
 
-  const labels: Record<string, string> = {
-    avatar: 'Foto',
-    name: 'Nombre',
-    category: 'Especialidad',
-    address: 'Dirección',
-    biography: 'Biografía',
-    modalidad: 'Modalidad',
-    documents: 'Documentos',
-    certifications: 'Certificaciones',
-    languages: 'Idiomas',
-    businessName: 'Nombre del consultorio',
-    businessAddress: 'Dirección del consultorio',
-    habilitacionNumber: 'Número de habilitación',
-    services: 'Servicios',
-    paymentMethods: 'Métodos de pago',
-    schedule: 'Horario',
-  };
+    const labels: Record<string, string> = {
+      avatar: 'Foto',
+      name: 'Nombre',
+      category: 'Especialidad',
+      address: 'Dirección',
+      biography: 'Biografía',
+      modalidad: 'Modalidad',
+      documents: 'Documentos',
+      certifications: 'Certificaciones',
+      languages: 'Idiomas',
+      businessName: 'Nombre del consultorio',
+      businessAddress: 'Dirección del consultorio',
+      habilitacionNumber: 'Número de habilitación',
+      services: 'Servicios',
+      paymentMethods: 'Métodos de pago',
+      schedule: 'Horario',
+    };
 
-  return Object.keys(labels)
-    .filter(key => status[key] === false)
-    .map(key => labels[key]);
-}
-parseArray(value: any): any[] {
-  if (!value) return [];
+    return Object.keys(labels)
+      .filter(key => status[key] === false)
+      .map(key => labels[key]);
+  }
+  parseArray(value: any): any[] {
+    if (!value) return [];
 
-  if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) return value;
 
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
     }
+
+    return [];
   }
 
-  return [];
-}
+  parseObject(value: any): any {
+    if (!value) return {};
 
-parseObject(value: any): any {
-  if (!value) return {};
-
-  if (typeof value === 'object' && !Array.isArray(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch {
-      return {};
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      return value;
     }
-  }
 
-  return {};
-}
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    return {};
+  }
   calculateLocalCompletion(
     professional: any,
     services: any[],
@@ -232,23 +235,23 @@ parseObject(value: any): any {
       this.hasValue(item?.end_time)
     );
 
-   const checks = {
-  avatar: this.hasValue(professional.avatarFile),
-  name: this.hasValue(professional.name),
-  category: this.hasValue(professional.category),
-  address: this.hasValue(professional.address),
-  biography: this.hasValue(professional.Biography),
-  modalidad: modalidad.length > 0,
-  documents: hasDocuments,
-  certifications: certifications.length > 0 || hasDocuments,
-  languages: languages.length > 0,
-  businessName: !requiereConsultorio || this.hasValue(professional.businessName),
-  businessAddress: !requiereConsultorio || this.hasValue(professional.businessAddress),
-  habilitacionNumber: !requiereConsultorio || this.hasValue(professional.habilitacionNumber),
-  services: services.length > 0,
-  paymentMethods: payments.length > 0,
-  schedule: hasSchedule,
-};
+    const checks = {
+      avatar: this.hasValue(professional.avatarFile),
+      name: this.hasValue(professional.name),
+      category: this.hasValue(professional.category),
+      address: this.hasValue(professional.address),
+      biography: this.hasValue(professional.Biography),
+      modalidad: modalidad.length > 0,
+      documents: hasDocuments,
+      certifications: certifications.length > 0 || hasDocuments,
+      languages: languages.length > 0,
+      businessName: !requiereConsultorio || this.hasValue(professional.businessName),
+      businessAddress: !requiereConsultorio || this.hasValue(professional.businessAddress),
+      habilitacionNumber: !requiereConsultorio || this.hasValue(professional.habilitacionNumber),
+      services: services.length > 0,
+      paymentMethods: payments.length > 0,
+      schedule: hasSchedule,
+    };
 
     const total = Object.keys(checks).length;
     const completed = Object.values(checks).filter(Boolean).length;
@@ -258,7 +261,7 @@ parseObject(value: any): any {
       status: checks,
     };
   }
-  
+
   hasValue(value: any): boolean {
     if (value === null || value === undefined) return false;
 
@@ -350,16 +353,33 @@ parseObject(value: any): any {
       this.cdr.detectChanges();
     }
   }
-
-
+  /* 
+  
+    viewProfessional(professional: any): void {
+      this.selectedProfessional = professional;
+      this.isModalOpen = true;
+  
+    }
+    closeProfessionalModal(): void {
+      this.isModalOpen = false;
+      this.selectedProfessional = null;
+    } */
   viewProfessional(professional: any): void {
     this.selectedProfessional = professional;
     this.isModalOpen = true;
 
+    const docs = this.getDocumentsArray(professional);
+    if (docs.length > 0) {
+      this.selectDocument(docs[0]);
+    } else {
+      this.clearSelectedDocument();
+    }
   }
+
   closeProfessionalModal(): void {
     this.isModalOpen = false;
     this.selectedProfessional = null;
+    this.clearSelectedDocument();
   }
   getProfessionalFileUrl(professional: any, fileName: string): string {
     return `${this.auth.pb.baseURL}/api/files/users/${professional.id}/${fileName}`;
@@ -533,15 +553,31 @@ parseObject(value: any): any {
     this.previewUrl = url;
   }
   isPdf(url: string): boolean {
-  return /\.pdf(\?|#|$)/i.test(url);
-}
+    return /\.pdf(\?|#|$)/i.test(url);
+  }
 
-isImage(url: string): boolean {
-  return /\.(jpg|jpeg|png|webp)(\?|#|$)/i.test(url);
-}
+  isImage(url: string): boolean {
+    return /\.(jpg|jpeg|png|webp)(\?|#|$)/i.test(url);
+  }
 
-getFileName(url: string): string {
-  return decodeURIComponent(url.split('/').pop() || 'Documento');
-}
+  getFileName(url: string): string {
+    return decodeURIComponent(url.split('/').pop() || 'Documento');
+  }
+  selectDocument(doc: { label: string; url: string }) {
+    this.selectedDocument = doc;
+
+    if (this.isPdf(doc.url)) {
+      this.selectedDocumentSafeUrl =
+        this.sanitizer.bypassSecurityTrustResourceUrl(doc.url);
+    } else {
+      this.selectedDocumentSafeUrl = null;
+    }
+  }
+
+  clearSelectedDocument() {
+    this.selectedDocument = null;
+    this.selectedDocumentSafeUrl = null;
+  }
+
 
 }
