@@ -1,0 +1,222 @@
+<section class="professional-detail-page">
+
+    <div class="detail-header">
+        <button type="button" class="back-btn" (click)="goBack()">
+            ←
+        </button>
+
+        <div>
+            <h2>Detalle del profesional</h2>
+            <p>Gestión completa del perfil, billetera y documentación.</p>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="loading-card">
+        Cargando detalle del profesional...
+    </div>
+
+    <ng-container *ngIf="!loading && professional">
+
+        <section class="profile-hero">
+            <img [src]="getAvatarUrl(professional)" [alt]="professional.name">
+
+            <div>
+                <h1>{{ professional.name || 'Sin nombre' }}</h1>
+                <p>{{ professional.email || 'Correo no disponible' }}</p>
+
+                <span class="status-pill">
+                    {{ professional.providerStatus || 'pending' }}
+                </span>
+            </div>
+        </section>
+
+        <nav class="detail-tabs">
+            <button [class.active]="activeTab === 'summary'" (click)="setTab('summary')">
+                Resumen
+            </button>
+
+            <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')">
+                Documentos
+            </button>
+
+            <button [class.active]="activeTab === 'wallet'" (click)="setTab('wallet')">
+                Billetera
+            </button>
+
+            <button [class.active]="activeTab === 'withdrawals'" (click)="setTab('withdrawals')">
+                Retiros
+            </button>
+
+            <button [class.active]="activeTab === 'movements'" (click)="setTab('movements')">
+                Movimientos
+            </button>
+        </nav>
+
+        <section *ngIf="activeTab === 'summary'" class="tab-panel">
+            <div class="cards-grid">
+                <div class="info-card">
+                    <span>Documento</span>
+                    <strong>{{ professional.docNumber || 'No disponible' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Teléfono</span>
+                    <strong>{{ professional.phone || 'No disponible' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Consultorio</span>
+                    <strong>{{ professional.businessName || 'No disponible' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Número habilitación</span>
+                    <strong>{{ professional.habilitacionNumber || 'No disponible' }}</strong>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3>Datos bancarios</h3>
+
+                <p *ngIf="banks.length === 0">No tiene cuentas bancarias registradas.</p>
+
+                <div class="bank-row" *ngFor="let bank of banks">
+                    <strong>{{ bank.bank }}</strong>
+                    <span>{{ bank.accountType }} — *****{{ bank.accountNumber?.slice(-4) }}</span>
+                    <small>{{ bank.accountHolder }} - {{ bank.documentType }} {{ bank.documentNumber }}</small>
+                </div>
+            </div>
+        </section>
+
+        <section *ngIf="activeTab === 'documents'" class="tab-panel">
+            <div class="section-card">
+                <h3>Documentos</h3>
+
+                <p *ngIf="getDocumentsArray(professional).length === 0">
+                    No hay documentos cargados.
+                </p>
+
+                <div class="documents-grid" *ngIf="getDocumentsArray(professional).length > 0">
+                    <div class="document-card" *ngFor="let doc of getDocumentsArray(professional)">
+                        <h4>{{ doc.label }}</h4>
+                        <small>{{ getFileName(doc.url) }}</small>
+
+                        <button type="button" (click)="selectDocument(doc)">
+                            Ver aquí
+                        </button>
+
+                        <a [href]="doc.url" target="_blank" rel="noopener noreferrer">
+                            Abrir
+                        </a>
+                    </div>
+                </div>
+
+                <div class="document-viewer" *ngIf="selectedDocument">
+                    <h4>{{ selectedDocument.label }}</h4>
+
+                    <img *ngIf="isImage(selectedDocument.url)" [src]="selectedDocument.url"
+                        [alt]="selectedDocument.label">
+
+                    <iframe *ngIf="isPdf(selectedDocument.url)" [src]="selectedDocumentSafeUrl">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <section *ngIf="activeTab === 'wallet'" class="tab-panel">
+            <div class="cards-grid">
+                <div class="info-card highlight">
+                    <span>Saldo disponible</span>
+                    <strong>{{ balance | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Ingresos por servicios</span>
+                    <strong>{{ totalIncome | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Propinas</span>
+                    <strong>{{ totalTips | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Ajustes</span>
+                    <strong>{{ totalAdjustments | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+            </div>
+        </section>
+
+        <section *ngIf="activeTab === 'withdrawals'" class="tab-panel">
+            <div class="cards-grid">
+                <div class="info-card warning">
+                    <span>Solicitado a retiro</span>
+                    <strong>{{ pendingWithdrawalTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Aprobado</span>
+                    <strong>{{ approvedWithdrawalTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Pagado</span>
+                    <strong>{{ paidWithdrawalTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3>Solicitudes de retiro</h3>
+
+                <p *ngIf="withdrawalRequests.length === 0">
+                    No hay solicitudes.
+                </p>
+
+                <div class="movement-row" *ngFor="let request of withdrawalRequests">
+                    <div>
+                        <strong>{{ request.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                        <p>{{ getWithdrawalStatus(request.status) }}</p>
+                        <small>{{ request.created | date:'d MMM y, h:mm a' }}</small>
+                    </div>
+                    <div class="withdraw-actions">
+                        <button *ngIf="request.status === 'pending'" type="button" class="approve-btn"
+                            (click)="approveWithdrawal(request)">
+                            Aprobar
+                        </button>
+
+                        <button *ngIf="request.status === 'approved'" type="button" class="paid-btn"
+                            (click)="markWithdrawalAsPaid(request)">
+                            Marcar como pagado
+                        </button>
+
+                        <button *ngIf="request.status === 'pending'" type="button" class="reject-btn"
+                            (click)="rejectWithdrawal(request)">
+                            Rechazar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section *ngIf="activeTab === 'movements'" class="tab-panel">
+            <div class="section-card">
+                <h3>Movimientos</h3>
+
+                <p *ngIf="transactions.length === 0">
+                    No hay movimientos registrados.
+                </p>
+
+                <div class="movement-row" *ngFor="let tx of transactions">
+                    <div>
+                        <strong>{{ getTransactionLabel(tx.type) }}</strong>
+                        <p>{{ tx.description || 'Movimiento de billetera' }}</p>
+                        <small>{{ tx.created | date:'d MMM y, h:mm a' }}</small>
+                    </div>
+
+                    <strong>{{ tx.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+            </div>
+        </section>
+
+    </ng-container>
+</section>

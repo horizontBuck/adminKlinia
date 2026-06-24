@@ -8,6 +8,7 @@ import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
 import { Category } from '../../interfaces/category.interface';
 import { CategoriesService } from '../../services/categories.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Route, Router } from '@angular/router';
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -28,50 +29,68 @@ export class Home implements OnInit, OnDestroy {
   categories: Category[] = [];
   selectedDocument: { label: string; url: string } | null = null;
   selectedDocumentSafeUrl: SafeResourceUrl | null = null;
+  currentPage = 1;
+  pageSize = 20;
+  selectedProfessionalBanks: any[] = [];
+  selectedProfessionalWallet: any = null;
+  selectedProfessionalTransactions: any[] = [];
+  walletLoading = false;
+  bankLoading = false;
+  professionalBalance = 0;
+  professionalWithdrawnTotal = 0;
+  professionalTotalIncome = 0;
+  professionalTotalWithdrawals = 0;
+  professionalTotalAdjustments = 0;
+  professionalTotalTips = 0;
+  selectedProfessionalWithdrawalRequests: any[] = [];
+  professionalPendingWithdrawalTotal = 0;
+  professionalPaidWithdrawalTotal = 0;
+  professionalApprovedWithdrawalTotal = 0;
   constructor(
     private professionalsService: ProfessionalsService,
     private auth: AuthPocketbaseService,
     private patientsService: PatientsService,
     private cdr: ChangeDetectorRef,
     private categoriesService: CategoriesService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public router: Router
   ) { }
 
-  ngOnInit() {
-    this.subscription.add(
-      this.professionalsService.professionals$.subscribe((professionals) => {
-        this.professionals = professionals.map((professional: any) => ({
-          ...professional,
-          profileCompletion: 0,
-          completionStatus: {},
-          services: [],
-          payments: [],
-          workingHours: [],
-          loadingProfile: true,
-        }));
+ ngOnInit() {
+  this.loadCategories();
 
-        this.cdr.detectChanges();
+  this.subscription.add(
+    this.professionalsService.professionals$.subscribe((professionals) => {
+      this.professionals = professionals.map((professional: any) => ({
+        ...professional,
+        profileCompletion: 0,
+        completionStatus: {},
+        services: [],
+        payments: [],
+        workingHours: [],
+        loadingProfile: true,
+      }));
 
-        this.loadProfessionalsExtraData();
-        this.loadCategories();
+      this.cdr.detectChanges();
 
-      })
-    );
+      this.loadProfessionalsExtraData();
+    })
+  );
 
-    this.subscription.add(
-      this.patientsService.patients$.subscribe((patients) => {
-        this.patients = patients;
-        this.cdr.detectChanges();
-      })
-    );
+  this.subscription.add(
+    this.patientsService.patients$.subscribe((patients) => {
+      this.patients = patients;
+      this.cdr.detectChanges();
+    })
+  );
 
-    this.isReady = true;
+  this.isReady = true;
 
-    setTimeout(() => {
-      this.professionalsService.loadProfessionals();
-      this.patientsService.loadPatients();
-    }, 300);
-  }
+  setTimeout(() => {
+    this.professionalsService.loadProfessionals(1);
+    this.patientsService.loadPatients();
+  }, 300);
+}
   loadCategories() {
     this.categoriesService.listTop().subscribe({
       next: (categories) => {
@@ -353,33 +372,54 @@ export class Home implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     }
   }
-  /* 
-  
-    viewProfessional(professional: any): void {
-      this.selectedProfessional = professional;
-      this.isModalOpen = true;
-  
-    }
-    closeProfessionalModal(): void {
-      this.isModalOpen = false;
-      this.selectedProfessional = null;
-    } */
-  viewProfessional(professional: any): void {
+
+  /*  viewProfessional(professional: any): void {
+     this.selectedProfessional = professional;
+     this.isModalOpen = true;
+ 
+     const docs = this.getDocumentsArray(professional);
+     if (docs.length > 0) {
+       this.selectDocument(docs[0]);
+     } else {
+       this.clearSelectedDocument();
+     }
+   } */
+  async viewProfessional(professional: any): Promise<void> {
     this.selectedProfessional = professional;
     this.isModalOpen = true;
 
+    this.bankLoading = true;
+    this.walletLoading = true;
+    
     const docs = this.getDocumentsArray(professional);
+
     if (docs.length > 0) {
       this.selectDocument(docs[0]);
     } else {
       this.clearSelectedDocument();
     }
+
+    await Promise.allSettled([
+  this.loadProfessionalBankData(professional.id),
+  this.loadProfessionalWalletData(professional.id),
+  this.loadProfessionalWithdrawalRequests(professional.id)
+]);
   }
 
+  /*  closeProfessionalModal(): void {
+     this.isModalOpen = false;
+     this.selectedProfessional = null;
+     this.clearSelectedDocument();
+   } */
   closeProfessionalModal(): void {
     this.isModalOpen = false;
     this.selectedProfessional = null;
     this.clearSelectedDocument();
+
+    this.selectedProfessionalBanks = [];
+    this.selectedProfessionalWallet = null;
+    this.selectedProfessionalTransactions = [];
+    this.resetProfessionalWalletSummary();
   }
   getProfessionalFileUrl(professional: any, fileName: string): string {
     return `${this.auth.pb.baseURL}/api/files/users/${professional.id}/${fileName}`;
@@ -578,6 +618,168 @@ export class Home implements OnInit, OnDestroy {
     this.selectedDocument = null;
     this.selectedDocumentSafeUrl = null;
   }
+  get paginatedProfessionals() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.professionals.slice(start, end);
+  }
 
+  get totalPages(): number {
+    return Math.ceil(this.professionals.length / this.pageSize);
+  }
 
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+  }
+
+  get pages(): number[] {
+    return Array.from(
+      { length: this.totalPages },
+      (_, i) => i + 1
+    );
+  }
+  async loadProfessionalBankData(professionalId: string) {
+    this.bankLoading = true;
+    this.selectedProfessionalBanks = [];
+
+    try {
+      const banks = await this.auth.pb.collection('payments').getFullList({
+        filter: `idUser="${professionalId}"`,
+        sort: '-created',
+        requestKey: null
+      });
+
+      this.selectedProfessionalBanks = banks;
+    } catch (error) {
+      console.error('Error cargando bancos del profesional:', error);
+      this.selectedProfessionalBanks = [];
+    } finally {
+      this.bankLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+  async loadProfessionalWalletData(professionalId: string) {
+    this.walletLoading = true;
+    this.selectedProfessionalWallet = null;
+    this.selectedProfessionalTransactions = [];
+    this.resetProfessionalWalletSummary();
+
+    try {
+      const wallets = await this.auth.pb.collection('wallets').getFullList({
+        filter: `user="${professionalId}"`,
+        sort: '-created',
+        requestKey: null
+      });
+
+      this.selectedProfessionalWallet = wallets[0] || null;
+
+      if (!this.selectedProfessionalWallet) {
+        return;
+      }
+
+      this.professionalBalance = Number(this.selectedProfessionalWallet.balance || 0);
+      this.professionalWithdrawnTotal = Number(this.selectedProfessionalWallet.withdrawnTotal || 0);
+
+      const transactions = await this.auth.pb.collection('wallet_transactions').getFullList({
+        filter: `wallet="${this.selectedProfessionalWallet.id}"`,
+        sort: '-created',
+        requestKey: null
+      });
+
+      this.selectedProfessionalTransactions = transactions;
+      this.calculateProfessionalWalletSummary();
+
+    } catch (error) {
+      console.error('Error cargando wallet del profesional:', error);
+      this.selectedProfessionalWallet = null;
+      this.selectedProfessionalTransactions = [];
+      this.resetProfessionalWalletSummary();
+    } finally {
+      this.walletLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+  async loadProfessionalWithdrawalRequests(professionalId: string) {
+  try {
+    const requests = await this.auth.pb
+      .collection('withdrawal_requests')
+      .getFullList({
+        filter: `professional="${professionalId}"`,
+        sort: '-created',
+        requestKey: null
+      });
+
+    this.selectedProfessionalWithdrawalRequests = requests;
+
+    this.professionalPendingWithdrawalTotal = requests
+      .filter(req => req['status'] === 'pending')
+      .reduce((sum, req) => sum + Number(req['amount'] || 0), 0);
+
+    this.professionalApprovedWithdrawalTotal = requests
+      .filter(req => req['status'] === 'approved')
+      .reduce((sum, req) => sum + Number(req['amount'] || 0), 0);
+
+    this.professionalPaidWithdrawalTotal = requests
+      .filter(req => req['status'] === 'paid')
+      .reduce((sum, req) => sum + Number(req['amount'] || 0), 0);
+
+  } catch (error) {
+    console.error('Error cargando solicitudes de retiro:', error);
+    this.selectedProfessionalWithdrawalRequests = [];
+    this.professionalPendingWithdrawalTotal = 0;
+    this.professionalApprovedWithdrawalTotal = 0;
+    this.professionalPaidWithdrawalTotal = 0;
+  } finally {
+    this.cdr.detectChanges();
+  }
+}
+  calculateProfessionalWalletSummary() {
+
+    this.professionalTotalIncome = this.selectedProfessionalTransactions
+      .filter(tx => tx.type === 'professional_earning')
+      .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+    this.professionalTotalTips = this.selectedProfessionalTransactions
+      .filter(tx => tx.type === 'payment_received')
+      .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+    this.professionalTotalWithdrawals = this.selectedProfessionalTransactions
+      .filter(tx => tx.type === 'withdrawal')
+      .reduce((sum, tx) => sum + Math.abs(Number(tx.amount || 0)), 0);
+
+    this.professionalTotalAdjustments = this.selectedProfessionalTransactions
+      .filter(tx =>
+        ['appointment_cancelled', 'refund', 'adjustment']
+          .includes(tx.type)
+      )
+      .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+  }
+
+  resetProfessionalWalletSummary() {
+    this.professionalBalance = 0;
+    this.professionalWithdrawnTotal = 0;
+    this.professionalTotalIncome = 0;
+    this.professionalTotalTips = 0;
+    this.professionalTotalWithdrawals = 0;
+    this.professionalTotalAdjustments = 0;
+  }
+goToProfessionalDetail(professional: any) {
+  if (!professional?.id) return;
+
+  this.closeProfessionalModal();
+
+  this.router.navigate(['/professionals', professional.id]);
+}
 }

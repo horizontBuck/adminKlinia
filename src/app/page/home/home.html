@@ -75,7 +75,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let professional of professionals; trackBy: trackByProfessionalId">
+
+                                        <tr
+                                            *ngFor="let professional of paginatedProfessionals; trackBy: trackByProfessionalId">
                                             <!-- <td>
                                                 <p>{{ formatDate(professional.created) }}</p>
                                             </td> -->
@@ -133,154 +135,224 @@
                                                     Ver
                                                 </button>
 
+
                                             </td>
 
                                         </tr>
                                     </tbody>
 
                                 </table>
+                                <div class="pagination-container" *ngIf="totalPages > 1">
+
+                                    <button type="button" (click)="previousPage()" [disabled]="currentPage === 1">
+                                        Anterior
+                                    </button>
+
+                                    <button *ngFor="let page of pages" type="button"
+                                        [class.active]="page === currentPage" (click)="goToPage(page)">
+                                        {{ page }}
+                                    </button>
+
+                                    <button type="button" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                                        Siguiente
+                                    </button>
+
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- MODAL -->
-                    <div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeProfessionalModal()">
-                    </div>
+                    <div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeProfessionalModal()"></div>
 
                     <div class="custom-modal" *ngIf="isModalOpen && selectedProfessional">
                         <div class="custom-modal-content" (click)="$event.stopPropagation()">
+
                             <div class="custom-modal-header">
-                                <h3>Detalles del profesional</h3>
+                                <div>
+                                    <h3>Resumen del profesional</h3>
+                                    <p>Información general, bancaria y financiera básica</p>
+                                </div>
+
                                 <button type="button" class="close-btn" (click)="closeProfessionalModal()">
                                     ×
                                 </button>
                             </div>
+
                             <div class="custom-modal-body">
-                                <div class="professional-detail-top">
+
+                                <section class="modal-profile-card">
                                     <img class="professional-avatar" [src]="getAvatarUrl(selectedProfessional)"
                                         [alt]="selectedProfessional.name">
-                                    <div class="professional-main-info">
+
+                                    <div class="modal-profile-info">
                                         <h4>{{ selectedProfessional.name || 'Sin nombre' }}</h4>
-                                        <p><strong>Correo:</strong> {{ selectedProfessional.email || 'No disponible' }}
-                                        </p>
-                                        <p><strong>Estado:</strong> {{ selectedProfessional.providerStatus || 'pending'
-                                            }}</p>
-                                        <p><strong>Fecha de registro:</strong> {{
-                                            formatDate(selectedProfessional.created) }}</p>
-                                        <p><strong>Fecha de nacimiento:</strong> {{
-                                            formatDate(selectedProfessional.birthdate) }}</p>
-                                        <p><strong>Genero:</strong> {{ selectedProfessional.gender || 'No disponible' }}
-                                        </p>
-                                        <p><strong>Número de habilitación:</strong> {{
-                                            selectedProfessional.habilitacionNumber || 'No disponible' }}</p>
+
+                                        <span class="status-pill"
+                                            [class.approved]="selectedProfessional.providerStatus === 'approved'"
+                                            [class.rejected]="selectedProfessional.providerStatus === 'rejected'"
+                                            [class.pending]="!selectedProfessional.providerStatus || selectedProfessional.providerStatus === 'pending'">
+                                            {{ selectedProfessional.providerStatus || 'pending' }}
+                                        </span>
+
+                                        <p>{{ selectedProfessional.email || 'Correo no disponible' }}</p>
                                     </div>
-                                </div>
+                                </section>
 
-                                <div class="professional-grid">
-                                    <div class="detail-card">
-                                        <h5>Numero de Documento</h5>
-                                        <p>{{ selectedProfessional.docNumber || 'No disponible' }}</p>
-                                    </div>
+                                <section class="modal-section">
+                                    <h5>Información profesional</h5>
 
-                                    <div class="detail-card" *ngIf="selectedProfessional.phone">
-                                        <h5>Teléfono</h5>
-                                        <p>{{ selectedProfessional.phone }}</p>
-                                    </div>
-
-                                    <div class="detail-card" *ngIf="selectedProfessional.category">
-                                        <h5>Especialidad</h5>
-                                        <p>{{ getCategoryName(selectedProfessional.category) }}</p>
-                                    </div>
-
-                                    <div class="detail-card" *ngIf="selectedProfessional.businessName">
-                                        <h5>Nombre del consultorio</h5>
-                                        <p>{{ selectedProfessional.businessName }}</p>
-                                    </div>
-
-
-
-                                    <div class="detail-card" *ngIf="selectedProfessional.modalidadAtencion">
-                                        <h5>Modalidad de atención</h5>
-                                        <ul>
-                                            <li>{{ selectedProfessional.modalidadAtencion }}</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div class="detail-card full-width" *ngIf="selectedProfessional.Biography">
-                                    <h5>Biografía</h5>
-                                    <p>{{ selectedProfessional.Biography }}</p>
-                                </div>
-                                <div class="detail-card full-width">
-                                    <h5>Certificados / Documentos</h5>
-
-                                    <ng-container
-                                        *ngIf="getDocumentsArray(selectedProfessional).length > 0; else noDocuments">
-
-                                        <div class="documents-list documents-grid">
-                                            <div class="document-preview-card"
-                                                *ngFor="let doc of getDocumentsArray(selectedProfessional)"
-                                                [class.active]="selectedDocument?.url === doc.url">
-
-                                                <div class="document-header">
-                                                    <h6>{{ doc.label }}</h6>
-
-                                                    <small>
-                                                        {{ getFileName(doc.url) }}
-                                                    </small>
-                                                </div>
-
-                                                <div class="document-mini-preview">
-                                                    <img *ngIf="isImage(doc.url)" [src]="doc.url" [alt]="doc.label" />
-
-                                                    <div *ngIf="isPdf(doc.url)" class="pdf-placeholder">
-                                                        <i class="ph ph-file-pdf"></i>
-                                                        <span>PDF</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="document-actions">
-                                                    <button type="button" class="view" (click)="selectDocument(doc)">
-                                                        Ver aquí
-                                                    </button>
-
-                                                    <a [href]="doc.url" target="_blank" rel="noopener noreferrer"
-                                                        class="view">
-                                                        Abrir
-                                                    </a>
-                                                </div>
-                                            </div>
+                                    <div class="modal-grid">
+                                        <div class="info-card">
+                                            <span>Documento</span>
+                                            <strong>{{ selectedProfessional.docNumber || 'No disponible' }}</strong>
                                         </div>
 
-                                        <div class="selected-document-viewer" *ngIf="selectedDocument">
-                                            <div class="selected-document-header">
-                                                <div>
-                                                    <h6>{{ selectedDocument.label }}</h6>
-                                                    <small>{{ getFileName(selectedDocument.url) }}</small>
-                                                </div>
-
-                                                <a [href]="selectedDocument.url" target="_blank"
-                                                    rel="noopener noreferrer" class="view">
-                                                    Abrir en nueva pestaña
-                                                </a>
-                                            </div>
-
-                                            <div class="selected-document-body">
-                                                <img *ngIf="isImage(selectedDocument.url)" [src]="selectedDocument.url"
-                                                    [alt]="selectedDocument.label" class="selected-document-image" />
-
-                                                <iframe *ngIf="isPdf(selectedDocument.url)"
-                                                    [src]="selectedDocumentSafeUrl" class="selected-document-pdf">
-                                                </iframe>
-                                            </div>
+                                        <div class="info-card">
+                                            <span>Teléfono</span>
+                                            <strong>{{ selectedProfessional.phone || 'No disponible' }}</strong>
                                         </div>
 
+                                        <div class="info-card">
+                                            <span>Especialidad</span>
+                                            <strong>
+                                                {{
+                                                selectedProfessional.category
+                                                ? getCategoryName(selectedProfessional.category)
+                                                : 'No disponible'
+                                                }}
+                                            </strong>
+                                        </div>
+
+                                        <div class="info-card">
+                                            <span>Consultorio</span>
+                                            <strong>{{ selectedProfessional.businessName || 'No disponible' }}</strong>
+                                        </div>
+
+                                        <div class="info-card">
+                                            <span>Fecha de registro</span>
+                                            <strong>{{ formatDate(selectedProfessional.created) || 'No disponible'
+                                                }}</strong>
+                                        </div>
+
+                                        <div class="info-card">
+                                            <span>Número de habilitación</span>
+                                            <strong>{{ selectedProfessional.habilitacionNumber || 'No disponible'
+                                                }}</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="modal-section">
+                                    <h5>Datos bancarios</h5>
+
+                                    <div class="loading-line" *ngIf="bankLoading">
+                                        Cargando datos bancarios...
+                                    </div>
+
+                                    <ng-container *ngIf="!bankLoading">
+                                        <div class="empty-state" *ngIf="selectedProfessionalBanks.length === 0">
+                                            No tiene cuentas bancarias registradas.
+                                        </div>
+
+                                        <div class="bank-summary" *ngIf="selectedProfessionalBanks.length > 0">
+                                            <div class="bank-main">
+                                                <span>Banco principal</span>
+                                                <strong>{{ selectedProfessionalBanks[0].bank || 'No disponible'
+                                                    }}</strong>
+                                                <p>
+                                                    {{ selectedProfessionalBanks[0].accountType || 'Cuenta' }}
+                                                    —
+                                                    *****{{ selectedProfessionalBanks[0].accountNumber?.slice(-4) ||
+                                                    '----' }}
+                                                </p>
+                                            </div>
+
+                                            <div class="bank-meta">
+                                                <span>Titular</span>
+                                                <strong>
+                                                    {{
+                                                    selectedProfessionalBanks[0].accountHolder ||
+                                                    selectedProfessional.name ||
+                                                    'No disponible'
+                                                    }}
+                                                </strong>
+
+                                                <small>
+                                                    {{ selectedProfessionalBanks[0].documentType || '' }}
+                                                    {{ selectedProfessionalBanks[0].documentNumber || '' }}
+                                                </small>
+                                            </div>
+                                        </div>
                                     </ng-container>
+                                </section>
 
-                                    <ng-template #noDocuments>
-                                        <p>No hay documentos cargados.</p>
-                                    </ng-template>
-                                </div>
+                                <section class="modal-section">
+                                    <h5>Resumen financiero</h5>
+
+                                    <div class="loading-line" *ngIf="walletLoading">
+                                        Cargando billetera...
+                                    </div>
+
+                                    <ng-container *ngIf="!walletLoading">
+                                        <div class="empty-state" *ngIf="!selectedProfessionalWallet">
+                                            Este profesional no tiene billetera registrada.
+                                        </div>
+
+                                        <div class="finance-grid" *ngIf="selectedProfessionalWallet">
+                                            <div class="finance-card highlight">
+                                                <span>Saldo disponible</span>
+                                                <strong>
+                                                    {{ professionalBalance | currency:'COP':'symbol-narrow':'1.0-0' }}
+                                                </strong>
+                                            </div>
+
+                                            <div class="finance-card warning">
+                                                <span>Solicitado a retiro</span>
+                                                <strong>
+                                                    {{ professionalPendingWithdrawalTotal |
+                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
+                                                </strong>
+                                            </div>
+
+                                            <div class="finance-card">
+                                                <span>Ingresos por servicios</span>
+                                                <strong>
+                                                    {{ professionalTotalIncome | currency:'COP':'symbol-narrow':'1.0-0'
+                                                    }}
+                                                </strong>
+                                            </div>
+
+                                            <div class="finance-card">
+                                                <span>Propinas</span>
+                                                <strong>
+                                                    {{ professionalTotalTips | currency:'COP':'symbol-narrow':'1.0-0' }}
+                                                </strong>
+                                            </div>
+
+                                            <div class="finance-card">
+                                                <span>Retiros pagados</span>
+                                                <strong>
+                                                    {{ professionalPaidWithdrawalTotal |
+                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
+                                                </strong>
+                                            </div>
+
+                                            <div class="finance-card">
+                                                <span>Ajustes</span>
+                                                <strong>
+                                                    {{ professionalTotalAdjustments |
+                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </section>
+
+                                <section class="modal-section" *ngIf="selectedProfessional.Biography">
+                                    <h5>Biografía</h5>
+                                    <p class="bio-text">{{ selectedProfessional.Biography }}</p>
+                                </section>
 
                             </div>
 
@@ -288,7 +360,14 @@
                                 <button type="button" class="cancel" (click)="closeProfessionalModal()">
                                     Cerrar
                                 </button>
+
+
+                                <button type="button" class="view"
+                                    (click)="goToProfessionalDetail(selectedProfessional)">
+                                    Ver detalle
+                                </button>
                             </div>
+
                         </div>
                     </div>
                     <!-- FIN MODAL -->

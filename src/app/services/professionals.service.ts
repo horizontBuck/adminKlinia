@@ -67,8 +67,7 @@ updateProfessionalInState(id: string, changes: Partial<Professional>) {
   this._professionals$.next(updated);
 }
 
-async loadProfessionals(): Promise<void> {
-  if (this.loadingProfessionals) {
+async loadProfessionals(page = 1): Promise<void> {  if (this.loadingProfessionals) {
     console.log('⏳ loadProfessionals cancelado: ya hay una carga en curso');
     return;
   }

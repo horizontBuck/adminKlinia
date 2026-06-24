@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
 
 @Component({
   selector: 'app-header',
@@ -10,5 +11,11 @@ import { RouterLink } from '@angular/router';
   styleUrl: './header.scss',
 })
 export class Header {
-
+  constructor (private auth: AuthPocketbaseService,
+    public router: Router
+  ){}
+logout() {
+  this.auth.pb.authStore.clear();
+  this.router.navigate(['/login']);
+}
 }
