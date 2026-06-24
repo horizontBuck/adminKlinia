@@ -63,10 +63,25 @@
                     <span>Teléfono</span>
                     <strong>{{ professional.phone || 'No disponible' }}</strong>
                 </div>
-                
+                <div class="info-card">
+                    <span>Especialidad</span>
+                    <strong>
+                        {{
+                        professional.expand?.category?.name ||
+                        professional.categoryName ||
+                        professional.category ||
+                        'No disponible'
+                        }}
+                    </strong>
+                </div>
 
                 <div class="info-card">
-                    <span>Consultorio</span>
+                    <span>Modalidad de atención</span>
+                    <strong>{{ getModalidades(professional) }}</strong>
+                </div>
+
+                <div class="info-card">
+                    <span>Nombre de Consultorio</span>
                     <strong>{{ professional.businessName || 'No disponible' }}</strong>
                 </div>
                 <div class="info-card">
@@ -87,30 +102,30 @@
 
                 <div class="bank-row" *ngFor="let bank of banks">
 
-    <div><strong>Banco:</strong> {{ bank.bank }}</div>
+                    <div><strong>Banco:</strong> {{ bank.bank }}</div>
 
-    <div>
-        <strong>Tipo:</strong>
-        {{ bank.accountType }}
-    </div>
+                    <div>
+                        <strong>Tipo:</strong>
+                        {{ bank.accountType }}
+                    </div>
 
-    <div>
-        <strong>Cuenta:</strong>
-        {{ bank.accountNumber }}
-    </div>
+                    <div>
+                        <strong>Cuenta:</strong>
+                        {{ bank.accountNumber }}
+                    </div>
 
-    <div>
-        <strong>Titular:</strong>
-        {{ bank.accountHolder }}
-    </div>
+                    <div>
+                        <strong>Titular:</strong>
+                        {{ bank.accountHolder }}
+                    </div>
 
-    <div>
-        <strong>Documento:</strong>
-        {{ bank.documentType }}
-        {{ bank.documentNumber }}
-    </div>
+                    <div>
+                        <strong>Documento:</strong>
+                        {{ bank.documentType }}
+                        {{ bank.documentNumber }}
+                    </div>
 
-</div>
+                </div>
             </div>
         </section>
 

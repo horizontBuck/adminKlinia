@@ -29,7 +29,7 @@ export class ProfessionalDetail implements OnInit {
   wallet: any = null;
   transactions: any[] = [];
   withdrawalRequests: any[] = [];
-
+  
   balance = 0;
   withdrawnTotal = 0;
   totalIncome = 0;
@@ -332,4 +332,40 @@ async rejectWithdrawal(request: any) {
 
   await this.loadProfessionalDetail();
 }
+getModalidades(professional: any): string {
+  const modalidades = this.parseArray(professional?.modalidadAtencion);
+
+  if (!modalidades.length) {
+    return 'No disponible';
+  }
+
+  const labels: Record<string, string> = {
+    telemedicina: 'Telemedicina',
+    atencion_domiciliaria: 'Atención domiciliaria',
+    domicilio: 'Atención domiciliaria',
+    consultorio: 'Consultorio',
+  };
+
+  return modalidades
+    .map((item: string) => labels[item] || item)
+    .join(', ');
+}
+
+parseArray(value: any): any[] {
+  if (!value) return [];
+
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return value ? [value] : [];
+    }
+  }
+
+  return [];
+}
+
 }

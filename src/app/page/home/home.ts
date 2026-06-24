@@ -168,6 +168,15 @@ export class Home implements OnInit, OnDestroy {
       }
     }
   }
+  getModalidades(professional: any): string {
+  const modalidades = this.parseArray(professional?.modalidadAtencion);
+
+  if (!modalidades.length) {
+    return 'No disponible';
+  }
+
+  return modalidades.join(', ');
+}
   getMissingItems(professional: any): string[] {
     const status = professional?.completionStatus || {};
 
