@@ -5,6 +5,8 @@ import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
+import { Category } from '../../interfaces/category.interface';
+import { CategoriesService } from '../../services/categories.service';
 @Component({
   selector: 'app-professional-detail',
   standalone: true,
@@ -15,7 +17,7 @@ import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
 export class ProfessionalDetail implements OnInit {
   professionalId = '';
   loading = true;
-
+  categories: Category[] = [];
   activeTab:
     | 'summary'
     | 'documents'
@@ -49,7 +51,8 @@ export class ProfessionalDetail implements OnInit {
     private router: Router,
     private auth: AuthPocketbaseService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private categoriesService: CategoriesService
   ) {}
 
   async ngOnInit() {
@@ -61,8 +64,26 @@ export class ProfessionalDetail implements OnInit {
     }
 
     await this.loadProfessionalDetail();
+    this.loadCategories();
+  }
+  loadCategories() {
+  this.categoriesService.listTop().subscribe({
+    next: (categories) => {
+      this.categories = categories;
+    },
+    error: (error) => {
+      console.error(error);
+    }
+  });
+}
+
+getCategoryName(categoryId: string): string {
+  if (!categoryId || !this.categories?.length) {
+    return '';
   }
 
+  return this.categories.find((c: any) => c.id === categoryId)?.name || '';
+}
   async loadProfessionalDetail() {
     try {
       this.loading = true;
@@ -74,7 +95,7 @@ export class ProfessionalDetail implements OnInit {
         withdrawals
       ] = await Promise.all([
         this.auth.pb.collection('users').getOne(this.professionalId, {
-          expand: 'certificationFileUrl',
+  expand: 'certificationFileUrl,category',
           requestKey: null
         }),
         this.auth.pb.collection('payments').getFullList({

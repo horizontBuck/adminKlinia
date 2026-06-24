@@ -67,13 +67,21 @@
                     <span>Especialidad</span>
                     <strong>
                         {{
-                        professional.expand?.category?.name ||
-                        professional.categoryName ||
-                        professional.category ||
-                        'No disponible'
+                        professional.category
+                        ? getCategoryName(professional.category)
+                        : 'No disponible'
                         }}
                     </strong>
                 </div>
+                <div class="info-card">
+  <span>Especialidad</span>
+  <strong>
+    {{
+      professional.expand?.category?.name ||
+      'No disponible'
+    }}
+  </strong>
+</div>
 
                 <div class="info-card">
                     <span>Modalidad de atención</span>
