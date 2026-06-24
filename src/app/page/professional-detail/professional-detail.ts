@@ -10,7 +10,7 @@ import { CategoriesService } from '../../services/categories.service';
 @Component({
   selector: 'app-professional-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe,  ],
+  imports: [CommonModule, CurrencyPipe, DatePipe,],
   templateUrl: './professional-detail.html',
   styleUrl: './professional-detail.scss',
 })
@@ -31,7 +31,7 @@ export class ProfessionalDetail implements OnInit {
   wallet: any = null;
   transactions: any[] = [];
   withdrawalRequests: any[] = [];
-  
+
   balance = 0;
   withdrawnTotal = 0;
   totalIncome = 0;
@@ -53,7 +53,7 @@ export class ProfessionalDetail implements OnInit {
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
     private categoriesService: CategoriesService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     this.professionalId = this.route.snapshot.paramMap.get('id') || '';
@@ -67,23 +67,23 @@ export class ProfessionalDetail implements OnInit {
     this.loadCategories();
   }
   loadCategories() {
-  this.categoriesService.listTop().subscribe({
-    next: (categories) => {
-      this.categories = categories;
-    },
-    error: (error) => {
-      console.error(error);
-    }
-  });
-}
-
-getCategoryName(categoryId: string): string {
-  if (!categoryId || !this.categories?.length) {
-    return '';
+    this.categoriesService.listTop().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 
-  return this.categories.find((c: any) => c.id === categoryId)?.name || '';
-}
+  getCategoryName(categoryId: string): string {
+    if (!categoryId || !this.categories?.length) {
+      return '';
+    }
+
+    return this.categories.find((c: any) => c.id === categoryId)?.name || '';
+  }
   async loadProfessionalDetail() {
     try {
       this.loading = true;
@@ -95,7 +95,7 @@ getCategoryName(categoryId: string): string {
         withdrawals
       ] = await Promise.all([
         this.auth.pb.collection('users').getOne(this.professionalId, {
-  expand: 'certificationFileUrl,category',
+          expand: 'certificationFileUrl,category',
           requestKey: null
         }),
         this.auth.pb.collection('payments').getFullList({
@@ -162,10 +162,10 @@ getCategoryName(categoryId: string): string {
       .filter(tx => tx.type === 'payment_received')
       .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
 
+
     this.totalWithdrawals = this.transactions
       .filter(tx => tx.type === 'withdrawal')
       .reduce((sum, tx) => sum + Math.abs(Number(tx.amount || 0)), 0);
-
     this.totalAdjustments = this.transactions
       .filter(tx =>
         ['appointment_cancelled', 'refund', 'adjustment'].includes(tx.type)
@@ -289,104 +289,172 @@ getCategoryName(categoryId: string): string {
     return labels[status] || status;
   }
   async approveWithdrawal(request: any) {
-  const confirm = await Swal.fire({
-    title: '¿Aprobar retiro?',
-    text: 'La solicitud quedará aprobada, pero aún no marcada como pagada.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, aprobar',
-    cancelButtonText: 'Cancelar'
-  });
+    const confirm = await Swal.fire({
+      title: '¿Aprobar retiro?',
+      text: 'La solicitud quedará aprobada, pero aún no marcada como pagada.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar'
+    });
 
-  if (!confirm.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-  await this.auth.pb.collection('withdrawal_requests').update(request.id, {
-    status: 'approved',
-    note: 'Retiro aprobado por administración'
-  }, {
-    requestKey: null
-  });
+    await this.auth.pb.collection('withdrawal_requests').update(request.id, {
+      status: 'approved',
+      note: 'Retiro aprobado por administración'
+    }, {
+      requestKey: null
+    });
 
-  await this.loadProfessionalDetail();
-}
-async markWithdrawalAsPaid(request: any) {
-  const confirm = await Swal.fire({
-    title: '¿Marcar como pagado?',
-    text: 'Confirma que la transferencia bancaria ya fue realizada.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, marcar pagado',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  await this.auth.pb.collection('withdrawal_requests').update(request.id, {
-    status: 'paid',
-    paidAt: new Date().toISOString(),
-    note: 'Retiro pagado por administración'
-  }, {
-    requestKey: null
-  });
-
-  await this.loadProfessionalDetail();
-}
-async rejectWithdrawal(request: any) {
-  const confirm = await Swal.fire({
-    title: '¿Rechazar retiro?',
-    input: 'textarea',
-    inputPlaceholder: 'Motivo del rechazo',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Rechazar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  await this.auth.pb.collection('withdrawal_requests').update(request.id, {
-    status: 'rejected',
-    note: confirm.value || 'Retiro rechazado por administración'
-  }, {
-    requestKey: null
-  });
-
-  await this.loadProfessionalDetail();
-}
-getModalidades(professional: any): string {
-  const modalidades = this.parseArray(professional?.modalidadAtencion);
-
-  if (!modalidades.length) {
-    return 'No disponible';
+    await this.loadProfessionalDetail();
   }
+  async markWithdrawalAsPaid(request: any) {
 
-  const labels: Record<string, string> = {
-    telemedicina: 'Telemedicina',
-    atencion_domiciliaria: 'Atención domiciliaria',
-    domicilio: 'Atención domiciliaria',
-    consultorio: 'Consultorio',
-  };
+    if (request.status !== 'approved') {
+      Swal.fire(
+        'Operación no permitida',
+        'Solo las solicitudes aprobadas pueden marcarse como pagadas.',
+        'warning'
+      );
+      return;
+    }
 
-  return modalidades
-    .map((item: string) => labels[item] || item)
-    .join(', ');
-}
+    const confirm = await Swal.fire({
+      title: '¿Marcar como pagado?',
+      text: 'Confirma que la transferencia bancaria ya fue realizada.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, marcar pagado',
+      cancelButtonText: 'Cancelar'
+    });
 
-parseArray(value: any): any[] {
-  if (!value) return [];
+    if (!confirm.isConfirmed) return;
 
-  if (Array.isArray(value)) return value;
-
-  if (typeof value === 'string') {
     try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return value ? [value] : [];
+      const amount = Number(request.amount || 0);
+
+      const wallet = await this.auth.pb.collection('wallets').getOne(request.wallet, {
+        requestKey: null
+      });
+
+      const currentBalance = Number(wallet['balance'] || 0);
+      const currentWithdrawnTotal = Number(wallet['withdrawnTotal'] || 0);
+
+      if (amount <= 0) {
+        Swal.fire('Monto inválido', 'El retiro no tiene un monto válido.', 'warning');
+        return;
+      }
+
+      if (currentBalance < amount) {
+        Swal.fire(
+          'Saldo insuficiente',
+          'La billetera del profesional no tiene saldo suficiente para este retiro.',
+          'warning'
+        );
+        return;
+      }
+
+      await this.auth.pb.collection('withdrawal_requests').update(request.id, {
+        status: 'paid',
+        paidAt: new Date().toISOString(),
+        note: 'Retiro pagado por administración'
+      }, {
+        requestKey: null
+      });
+
+      await this.auth.pb.collection('wallet_transactions').create({
+        wallet: wallet.id,
+        user: this.professionalId,
+        type: 'withdrawal',
+        amount: amount * -1,
+        status: 'completed',
+        description: 'Retiro pagado por administración'
+      }, {
+        requestKey: null
+      });
+
+      await this.auth.pb.collection('wallets').update(wallet.id, {
+        balance: currentBalance - amount,
+        withdrawnTotal: currentWithdrawnTotal + amount
+      }, {
+        requestKey: null
+      });
+
+      await this.loadProfessionalDetail();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Retiro pagado',
+        text: 'El saldo fue descontado correctamente.'
+      });
+
+    } catch (error) {
+      console.error('Error marcando retiro como pagado:', error);
+
+      Swal.fire(
+        'Error',
+        'No se pudo marcar el retiro como pagado.',
+        'error'
+      );
     }
   }
+  async rejectWithdrawal(request: any) {
+    const confirm = await Swal.fire({
+      title: '¿Rechazar retiro?',
+      input: 'textarea',
+      inputPlaceholder: 'Motivo del rechazo',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Rechazar',
+      cancelButtonText: 'Cancelar'
+    });
 
-  return [];
-}
+    if (!confirm.isConfirmed) return;
+
+    await this.auth.pb.collection('withdrawal_requests').update(request.id, {
+      status: 'rejected',
+      note: confirm.value || 'Retiro rechazado por administración'
+    }, {
+      requestKey: null
+    });
+
+    await this.loadProfessionalDetail();
+  }
+  getModalidades(professional: any): string {
+    const modalidades = this.parseArray(professional?.modalidadAtencion);
+
+    if (!modalidades.length) {
+      return 'No disponible';
+    }
+
+    const labels: Record<string, string> = {
+      telemedicina: 'Telemedicina',
+      atencion_domiciliaria: 'Atención domiciliaria',
+      domicilio: 'Atención domiciliaria',
+      consultorio: 'Consultorio',
+    };
+
+    return modalidades
+      .map((item: string) => labels[item] || item)
+      .join(', ');
+  }
+
+  parseArray(value: any): any[] {
+    if (!value) return [];
+
+    if (Array.isArray(value)) return value;
+
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return value ? [value] : [];
+      }
+    }
+
+    return [];
+  }
 
 }
