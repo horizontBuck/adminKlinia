@@ -4,10 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
+import { AdminSidebar } from '../../shared/admin-sidebar/admin-sidebar';
 @Component({
   selector: 'app-professional-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe],
+  imports: [CommonModule, CurrencyPipe, DatePipe,  ],
   templateUrl: './professional-detail.html',
   styleUrl: './professional-detail.scss',
 })

@@ -18,9 +18,9 @@
                                                 style="background-image: url(assets/images/shape/shape-80.png);"></div>
                                         </div>
                                         <div class="icon-box"><i class="icon-Dashboard-1"></i></div>
-                                        <h3>
-                                            <h3>{{ professionals.length }}</h3>
-                                        </h3>
+
+                                        <h3>{{ professionals.length }}</h3>
+
                                         <h5>Total Profesionales</h5>
                                     </div>
                                 </div>
@@ -62,42 +62,37 @@
                             <h3>Porfesionales Registrados</h3>
                         </div>
                         <div class="doctors-list">
-                            <div class="table-outer">
+                            <div class="desktop-table">
                                 <table class="doctors-table">
                                     <thead class="table-header">
                                         <tr>
-                                            <th>Nombre</th>
-                                            <!--                                             <th>Fecha de registro</th>
- -->
+                                            <th>Profesional</th>
+                                            <th>Perfil</th>
+                                            <th>Faltantes</th>
                                             <th>Estado</th>
                                             <th>Acciones</th>
-
                                         </tr>
                                     </thead>
                                     <tbody>
-
                                         <tr
                                             *ngFor="let professional of paginatedProfessionals; trackBy: trackByProfessionalId">
-                                            <!-- <td>
-                                                <p>{{ formatDate(professional.created) }}</p>
-                                            </td> -->
-                                            <td>
+                                            <td data-label="Profesional">
                                                 <div class="name-box">
                                                     <figure class="image">
                                                         <img [src]="getAvatarUrl(professional)"
                                                             [alt]="professional.name">
                                                     </figure>
                                                     <span class="designation">{{ professional.name }}</span>
-
                                                 </div>
                                             </td>
-                                            <td>
+
+                                            <td data-label="Perfil">
                                                 <span class="completion-badge">
                                                     {{ professional.profileCompletion ?? 0 }}%
                                                 </span>
                                             </td>
 
-                                            <td>
+                                            <td data-label="Faltantes">
                                                 <ng-container *ngIf="!professional.loadingProfile">
                                                     <span *ngIf="getMissingItems(professional).length === 0">
                                                         Perfil completo
@@ -110,268 +105,328 @@
 
                                                 <span *ngIf="professional.loadingProfile">Cargando...</span>
                                             </td>
-                                            <td>
+
+                                            <td data-label="Estado">
                                                 <p>{{ professional.providerStatus || 'pending' }}</p>
                                             </td>
-                                            <td>
+
+                                            <td data-label="Acciones" class="actions-cell">
                                                 <button type="button" class="accept"
                                                     (click)="acceptProfessional(professional)"
                                                     [disabled]="professional.providerStatus === 'approved' || loadingIds.has(professional.id)">
                                                     {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Aprobar' }}
                                                 </button>
-                                            </td>
 
-                                            <td>
                                                 <button type="button" class="cancel"
                                                     (click)="rejectProfessional(professional)"
                                                     [disabled]="professional.providerStatus === 'rejected' || loadingIds.has(professional.id)">
                                                     {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Rechazar' }}
                                                 </button>
-                                            </td>
-                                            <td>
+
                                                 <button type="button" class="view"
                                                     (click)="viewProfessional(professional)"
                                                     [disabled]="loadingIds.has(professional.id)">
                                                     Ver
                                                 </button>
-
-
                                             </td>
-
                                         </tr>
                                     </tbody>
 
                                 </table>
-                                <div class="pagination-container" *ngIf="totalPages > 1">
+                            </div>
 
-                                    <button type="button" (click)="previousPage()" [disabled]="currentPage === 1">
-                                        Anterior
-                                    </button>
+                            <div class="mobile-professionals-list">
+                                <article class="mobile-professional-card"
+                                    *ngFor="let professional of paginatedProfessionals; trackBy: trackByProfessionalId">
 
-                                    <button *ngFor="let page of pages" type="button"
-                                        [class.active]="page === currentPage" (click)="goToPage(page)">
-                                        {{ page }}
-                                    </button>
+                                    <div class="mobile-professional-header">
+                                        <img [src]="getAvatarUrl(professional)" [alt]="professional.name">
+                                        <div>
+                                            <h4>{{ professional.name }}</h4>
+                                            <span>{{ professional.providerStatus || 'pending' }}</span>
+                                        </div>
+                                    </div>
 
-                                    <button type="button" (click)="nextPage()" [disabled]="currentPage === totalPages">
-                                        Siguiente
-                                    </button>
+                                    <div class="mobile-info-row">
+                                        <small>Perfil</small>
+                                        <strong>{{ professional.profileCompletion ?? 0 }}%</strong>
+                                    </div>
 
-                                </div>
+                                    <div class="mobile-info-row">
+                                        <small>Faltantes</small>
+
+                                        <ng-container *ngIf="!professional.loadingProfile">
+                                            <p *ngIf="getMissingItems(professional).length === 0">
+                                                Perfil completo
+                                            </p>
+
+                                            <p *ngIf="getMissingItems(professional).length > 0">
+                                                Falta: {{ getMissingItems(professional).join(', ') }}
+                                            </p>
+                                        </ng-container>
+
+                                        <p *ngIf="professional.loadingProfile">Cargando...</p>
+                                    </div>
+
+                                    <div class="mobile-actions">
+                                        <button type="button" class="accept" (click)="acceptProfessional(professional)"
+                                            [disabled]="professional.providerStatus === 'approved' || loadingIds.has(professional.id)">
+                                            {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Aprobar' }}
+                                        </button>
+
+                                        <button type="button" class="cancel" (click)="rejectProfessional(professional)"
+                                            [disabled]="professional.providerStatus === 'rejected' || loadingIds.has(professional.id)">
+                                            {{ loadingIds.has(professional.id) ? 'Guardando...' : 'Rechazar' }}
+                                        </button>
+
+                                        <button type="button" class="view" (click)="viewProfessional(professional)"
+                                            [disabled]="loadingIds.has(professional.id)">
+                                            Ver
+                                        </button>
+                                    </div>
+
+                                </article>
+                            </div>
+                            <div class="pagination-container" *ngIf="totalPages > 1">
+
+                                <button type="button" (click)="previousPage()" [disabled]="currentPage === 1">
+                                    Anterior
+                                </button>
+
+                                <button *ngFor="let page of pages" type="button" [class.active]="page === currentPage"
+                                    (click)="goToPage(page)">
+                                    {{ page }}
+                                </button>
+
+                                <button type="button" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                                    Siguiente
+                                </button>
+
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- MODAL -->
-                    <div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeProfessionalModal()"></div>
+                <!-- MODAL -->
+                <div class="custom-modal-backdrop" *ngIf="isModalOpen" (click)="closeProfessionalModal()"></div>
 
-                    <div class="custom-modal" *ngIf="isModalOpen && selectedProfessional">
-                        <div class="custom-modal-content" (click)="$event.stopPropagation()">
+                <div class="custom-modal" *ngIf="isModalOpen && selectedProfessional">
+                    <div class="custom-modal-content" (click)="$event.stopPropagation()">
 
-                            <div class="custom-modal-header">
-                                <div>
-                                    <h3>Resumen del profesional</h3>
-                                    <p>Información general, bancaria y financiera básica</p>
-                                </div>
-
-                                <button type="button" class="close-btn" (click)="closeProfessionalModal()">
-                                    ×
-                                </button>
+                        <div class="custom-modal-header">
+                            <div>
+                                <h3>Resumen del profesional</h3>
+                                <p>Información general, bancaria y financiera básica</p>
                             </div>
 
-                            <div class="custom-modal-body">
+                            <button type="button" class="close-btn" (click)="closeProfessionalModal()">
+                                ×
+                            </button>
+                        </div>
 
-                                <section class="modal-profile-card">
-                                    <img class="professional-avatar" [src]="getAvatarUrl(selectedProfessional)"
-                                        [alt]="selectedProfessional.name">
+                        <div class="custom-modal-body">
 
-                                    <div class="modal-profile-info">
-                                        <h4>{{ selectedProfessional.name || 'Sin nombre' }}</h4>
+                            <section class="modal-profile-card">
+                                <img class="professional-avatar" [src]="getAvatarUrl(selectedProfessional)"
+                                    [alt]="selectedProfessional.name">
 
-                                        <span class="status-pill"
-                                            [class.approved]="selectedProfessional.providerStatus === 'approved'"
-                                            [class.rejected]="selectedProfessional.providerStatus === 'rejected'"
-                                            [class.pending]="!selectedProfessional.providerStatus || selectedProfessional.providerStatus === 'pending'">
-                                            {{ selectedProfessional.providerStatus || 'pending' }}
-                                        </span>
+                                <div class="modal-profile-info">
+                                    <h4>{{ selectedProfessional.name || 'Sin nombre' }}</h4>
 
-                                        <p>{{ selectedProfessional.email || 'Correo no disponible' }}</p>
+                                    <span class="status-pill"
+                                        [class.approved]="selectedProfessional.providerStatus === 'approved'"
+                                        [class.rejected]="selectedProfessional.providerStatus === 'rejected'"
+                                        [class.pending]="!selectedProfessional.providerStatus || selectedProfessional.providerStatus === 'pending'">
+                                        {{ selectedProfessional.providerStatus || 'pending' }}
+                                    </span>
+
+                                    <p>{{ selectedProfessional.email || 'Correo no disponible' }}</p>
+                                </div>
+                            </section>
+
+                            <section class="modal-section">
+                                <h5>Información profesional</h5>
+
+                                <div class="modal-grid">
+                                    <div class="info-card">
+                                        <span>Documento</span>
+                                        <strong>{{ selectedProfessional.docNumber || 'No disponible' }}</strong>
                                     </div>
-                                </section>
 
-                                <section class="modal-section">
-                                    <h5>Información profesional</h5>
+                                    <div class="info-card">
+                                        <span>Teléfono</span>
+                                        <strong>{{ selectedProfessional.phone || 'No disponible' }}</strong>
+                                    </div>
 
-                                    <div class="modal-grid">
-                                        <div class="info-card">
-                                            <span>Documento</span>
-                                            <strong>{{ selectedProfessional.docNumber || 'No disponible' }}</strong>
+                                    <div class="info-card">
+                                        <span>Especialidad</span>
+                                        <strong>
+                                            {{
+                                            selectedProfessional.category
+                                            ? getCategoryName(selectedProfessional.category)
+                                            : 'No disponible'
+                                            }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="info-card">
+                                        <span>Consultorio</span>
+                                        <strong>{{ selectedProfessional.businessName || 'No disponible' }}</strong>
+                                    </div>
+
+                                    <div class="info-card">
+                                        <span>Fecha de registro</span>
+                                        <strong>{{ formatDate(selectedProfessional.created) || 'No disponible'
+                                            }}</strong>
+                                    </div>
+
+                                    <div class="info-card">
+                                        <span>Número de habilitación</span>
+                                        <strong>{{ selectedProfessional.habilitacionNumber || 'No disponible'
+                                            }}</strong>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="modal-section">
+                                <h5>Datos bancarios</h5>
+
+                                <div class="loading-line" *ngIf="bankLoading">
+                                    Cargando datos bancarios...
+                                </div>
+
+                                <ng-container *ngIf="!bankLoading">
+                                    <div class="empty-state" *ngIf="selectedProfessionalBanks.length === 0">
+                                        No tiene cuentas bancarias registradas.
+                                    </div>
+
+                                    <div class="bank-summary" *ngIf="selectedProfessionalBanks.length > 0">
+
+                                        <div class="bank-main">
+                                            <span>Banco</span>
+
+                                            <strong>
+                                                {{ selectedProfessionalBanks[0].bank || 'No disponible' }}
+                                            </strong>
+
+                                            <p>
+                                                {{ selectedProfessionalBanks[0].accountType || 'No disponible' }}
+                                            </p>
+
+                                            <p>
+                                                <strong>
+                                                    {{ selectedProfessionalBanks[0].accountNumber || 'No disponible' }}
+                                                </strong>
+                                            </p>
                                         </div>
 
-                                        <div class="info-card">
-                                            <span>Teléfono</span>
-                                            <strong>{{ selectedProfessional.phone || 'No disponible' }}</strong>
-                                        </div>
+                                        <div class="bank-meta">
+                                            <span>Titular</span>
 
-                                        <div class="info-card">
-                                            <span>Especialidad</span>
                                             <strong>
                                                 {{
-                                                selectedProfessional.category
-                                                ? getCategoryName(selectedProfessional.category)
-                                                : 'No disponible'
+                                                selectedProfessionalBanks[0].accountHolder ||
+                                                selectedProfessional.name ||
+                                                'No disponible'
+                                                }}
+                                            </strong>
+
+                                            <p>
+                                                {{ selectedProfessionalBanks[0].documentType || 'No disponible' }}
+                                            </p>
+
+                                            <p>
+                                                {{ selectedProfessionalBanks[0].documentNumber || 'No disponible' }}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                </ng-container>
+                            </section>
+
+                            <section class="modal-section">
+                                <h5>Resumen financiero</h5>
+
+                                <div class="loading-line" *ngIf="walletLoading">
+                                    Cargando billetera...
+                                </div>
+
+                                <ng-container *ngIf="!walletLoading">
+                                    <div class="empty-state" *ngIf="!selectedProfessionalWallet">
+                                        Este profesional no tiene billetera registrada.
+                                    </div>
+
+                                    <div class="finance-grid" *ngIf="selectedProfessionalWallet">
+                                        <div class="finance-card highlight">
+                                            <span>Saldo disponible</span>
+                                            <strong>
+                                                {{ professionalBalance | currency:'COP':'symbol-narrow':'1.0-0' }}
+                                            </strong>
+                                        </div>
+
+                                        <div class="finance-card warning">
+                                            <span>Solicitado a retiro</span>
+                                            <strong>
+                                                {{ professionalPendingWithdrawalTotal |
+                                                currency:'COP':'symbol-narrow':'1.0-0' }}
+                                            </strong>
+                                        </div>
+
+                                        <div class="finance-card">
+                                            <span>Ingresos por servicios</span>
+                                            <strong>
+                                                {{ professionalTotalIncome | currency:'COP':'symbol-narrow':'1.0-0'
                                                 }}
                                             </strong>
                                         </div>
 
-                                        <div class="info-card">
-                                            <span>Consultorio</span>
-                                            <strong>{{ selectedProfessional.businessName || 'No disponible' }}</strong>
+                                        <div class="finance-card">
+                                            <span>Propinas</span>
+                                            <strong>
+                                                {{ professionalTotalTips | currency:'COP':'symbol-narrow':'1.0-0' }}
+                                            </strong>
                                         </div>
 
-                                        <div class="info-card">
-                                            <span>Fecha de registro</span>
-                                            <strong>{{ formatDate(selectedProfessional.created) || 'No disponible'
-                                                }}</strong>
+                                        <div class="finance-card">
+                                            <span>Retiros pagados</span>
+                                            <strong>
+                                                {{ professionalPaidWithdrawalTotal |
+                                                currency:'COP':'symbol-narrow':'1.0-0' }}
+                                            </strong>
                                         </div>
 
-                                        <div class="info-card">
-                                            <span>Número de habilitación</span>
-                                            <strong>{{ selectedProfessional.habilitacionNumber || 'No disponible'
-                                                }}</strong>
+                                        <div class="finance-card">
+                                            <span>Ajustes</span>
+                                            <strong>
+                                                {{ professionalTotalAdjustments |
+                                                currency:'COP':'symbol-narrow':'1.0-0' }}
+                                            </strong>
                                         </div>
                                     </div>
-                                </section>
+                                </ng-container>
+                            </section>
 
-                                <section class="modal-section">
-                                    <h5>Datos bancarios</h5>
-
-                                    <div class="loading-line" *ngIf="bankLoading">
-                                        Cargando datos bancarios...
-                                    </div>
-
-                                    <ng-container *ngIf="!bankLoading">
-                                        <div class="empty-state" *ngIf="selectedProfessionalBanks.length === 0">
-                                            No tiene cuentas bancarias registradas.
-                                        </div>
-
-                                        <div class="bank-summary" *ngIf="selectedProfessionalBanks.length > 0">
-                                            <div class="bank-main">
-                                                <span>Banco principal</span>
-                                                <strong>{{ selectedProfessionalBanks[0].bank || 'No disponible'
-                                                    }}</strong>
-                                                <p>
-                                                    {{ selectedProfessionalBanks[0].accountType || 'Cuenta' }}
-                                                    —
-                                                    *****{{ selectedProfessionalBanks[0].accountNumber?.slice(-4) ||
-                                                    '----' }}
-                                                </p>
-                                            </div>
-
-                                            <div class="bank-meta">
-                                                <span>Titular</span>
-                                                <strong>
-                                                    {{
-                                                    selectedProfessionalBanks[0].accountHolder ||
-                                                    selectedProfessional.name ||
-                                                    'No disponible'
-                                                    }}
-                                                </strong>
-
-                                                <small>
-                                                    {{ selectedProfessionalBanks[0].documentType || '' }}
-                                                    {{ selectedProfessionalBanks[0].documentNumber || '' }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </ng-container>
-                                </section>
-
-                                <section class="modal-section">
-                                    <h5>Resumen financiero</h5>
-
-                                    <div class="loading-line" *ngIf="walletLoading">
-                                        Cargando billetera...
-                                    </div>
-
-                                    <ng-container *ngIf="!walletLoading">
-                                        <div class="empty-state" *ngIf="!selectedProfessionalWallet">
-                                            Este profesional no tiene billetera registrada.
-                                        </div>
-
-                                        <div class="finance-grid" *ngIf="selectedProfessionalWallet">
-                                            <div class="finance-card highlight">
-                                                <span>Saldo disponible</span>
-                                                <strong>
-                                                    {{ professionalBalance | currency:'COP':'symbol-narrow':'1.0-0' }}
-                                                </strong>
-                                            </div>
-
-                                            <div class="finance-card warning">
-                                                <span>Solicitado a retiro</span>
-                                                <strong>
-                                                    {{ professionalPendingWithdrawalTotal |
-                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
-                                                </strong>
-                                            </div>
-
-                                            <div class="finance-card">
-                                                <span>Ingresos por servicios</span>
-                                                <strong>
-                                                    {{ professionalTotalIncome | currency:'COP':'symbol-narrow':'1.0-0'
-                                                    }}
-                                                </strong>
-                                            </div>
-
-                                            <div class="finance-card">
-                                                <span>Propinas</span>
-                                                <strong>
-                                                    {{ professionalTotalTips | currency:'COP':'symbol-narrow':'1.0-0' }}
-                                                </strong>
-                                            </div>
-
-                                            <div class="finance-card">
-                                                <span>Retiros pagados</span>
-                                                <strong>
-                                                    {{ professionalPaidWithdrawalTotal |
-                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
-                                                </strong>
-                                            </div>
-
-                                            <div class="finance-card">
-                                                <span>Ajustes</span>
-                                                <strong>
-                                                    {{ professionalTotalAdjustments |
-                                                    currency:'COP':'symbol-narrow':'1.0-0' }}
-                                                </strong>
-                                            </div>
-                                        </div>
-                                    </ng-container>
-                                </section>
-
-                                <section class="modal-section" *ngIf="selectedProfessional.Biography">
-                                    <h5>Biografía</h5>
-                                    <p class="bio-text">{{ selectedProfessional.Biography }}</p>
-                                </section>
-
-                            </div>
-
-                            <div class="custom-modal-footer">
-                                <button type="button" class="cancel" (click)="closeProfessionalModal()">
-                                    Cerrar
-                                </button>
-
-
-                                <button type="button" class="view"
-                                    (click)="goToProfessionalDetail(selectedProfessional)">
-                                    Ver detalle
-                                </button>
-                            </div>
+                            <section class="modal-section" *ngIf="selectedProfessional.Biography">
+                                <h5>Biografía</h5>
+                                <p class="bio-text">{{ selectedProfessional.Biography }}</p>
+                            </section>
 
                         </div>
+
+                        <div class="custom-modal-footer">
+                            <button type="button" class="cancel" (click)="closeProfessionalModal()">
+                                Cerrar
+                            </button>
+
+
+                            <button type="button" class="view" (click)="goToProfessionalDetail(selectedProfessional)">
+                                Ver detalle
+                            </button>
+                        </div>
+
                     </div>
-                    <!-- FIN MODAL -->
                 </div>
+                <!-- FIN MODAL -->
             </div>
         </div>
     </section>
@@ -383,4 +438,3 @@
     <button class="scroll-top scroll-to-target" data-target="html">
         <span class="fa fa-arrow-up"></span>
     </button>
-</div>

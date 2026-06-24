@@ -63,10 +63,15 @@
                     <span>Teléfono</span>
                     <strong>{{ professional.phone || 'No disponible' }}</strong>
                 </div>
+                
 
                 <div class="info-card">
                     <span>Consultorio</span>
                     <strong>{{ professional.businessName || 'No disponible' }}</strong>
+                </div>
+                <div class="info-card">
+                    <span>Dirección de Consultorio</span>
+                    <strong>{{ professional.businessAddress || 'No disponible' }}</strong>
                 </div>
 
                 <div class="info-card">
@@ -81,10 +86,31 @@
                 <p *ngIf="banks.length === 0">No tiene cuentas bancarias registradas.</p>
 
                 <div class="bank-row" *ngFor="let bank of banks">
-                    <strong>{{ bank.bank }}</strong>
-                    <span>{{ bank.accountType }} — *****{{ bank.accountNumber?.slice(-4) }}</span>
-                    <small>{{ bank.accountHolder }} - {{ bank.documentType }} {{ bank.documentNumber }}</small>
-                </div>
+
+    <div><strong>Banco:</strong> {{ bank.bank }}</div>
+
+    <div>
+        <strong>Tipo:</strong>
+        {{ bank.accountType }}
+    </div>
+
+    <div>
+        <strong>Cuenta:</strong>
+        {{ bank.accountNumber }}
+    </div>
+
+    <div>
+        <strong>Titular:</strong>
+        {{ bank.accountHolder }}
+    </div>
+
+    <div>
+        <strong>Documento:</strong>
+        {{ bank.documentType }}
+        {{ bank.documentNumber }}
+    </div>
+
+</div>
             </div>
         </section>
 

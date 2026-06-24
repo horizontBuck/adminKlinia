@@ -1,77 +1,67 @@
-  <header class="main-header style-three">
+<header class="main-header style-three" *ngIf="showHeader">
+  <div class="header-lower">
+    <div class="outer-box header-flex">
 
-            <!-- header-lower -->
-            <div class="header-lower">
-                <div class="outer-box clearfix">
-                    <div class="left-column pull-left">
-                        <div class="logo-box">
-                            <figure class="logo"><a href="index.html"><img src="assets/images/logoColor.png" alt=""></a></figure>
-                        </div>
-                        <div class="menu-area">
-                            <!--Mobile Navigation Toggler-->
-                            <div class="mobile-nav-toggler">
-                                <i class="icon-bar"></i>
-                                <i class="icon-bar"></i>
-                                <i class="icon-bar"></i>
-                            </div>
-                            <nav class="main-menu navbar-expand-md navbar-light">
-                                <div class="collapse navbar-collapse show clearfix" id="navbarSupportedContent">
-                                    <ul class="navigation clearfix">
-                                        <li><a routerLink="/home">Inicio</a></li>
-                                        <li class="current dropdown"><a routerLink="/home">Profesionales</a>
-                                          
-                                        </li>
-                                        <li class="dropdown"><a routerLink="/clients">Pacientes</a>
-                                         
-                                        </li>
-                                      
-                                    </ul>
-                                </div>
-                            </nav>
-                        </div>
-                    </div>
-                    <div class="right-column pull-right">
-                        <div class="author-box">
-<!--                             <div class="icon-box"><a routerLink="/home"><i class="icon-Bell"></i></a></div>
- -->                            <div class="author">
-                                <figure class="author-image"><img src="assets/images/resource/author-1.png" alt=""></figure>
-                                <div class="select-box">
-                                    <select class="wide">
-                                       <option data-display="Admin">Administrador</option>
-                                       
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div class="logo-box">
+        <figure class="logo">
+          <a routerLink="/home">
+            <img src="assets/images/logoColor.png" alt="Klinia">
+          </a>
+        </figure>
+      </div>
 
-            <!--sticky Header-->
-            <div class="sticky-header">
-                <div class="auto-container">
-                    <div class="outer-box">
-                        <div class="logo-box">
-                            <figure class="logo"><a routerLink="/home"><img src="assets/images/logoColor.png" alt=""></a></figure>
-                        </div>
-                        <div class="menu-area">
-                            <nav class="main-menu clearfix">
-                                <!--Keep This Empty / Menu will come through Javascript-->
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+      <nav class="desktop-nav">
+        <ul class="navigation">
+          <li><a routerLink="/home">Inicio</a></li>
+          <li><a routerLink="/home">Profesionales</a></li>
+          <li><a routerLink="/clients">Pacientes</a></li>
+        </ul>
+      </nav>
 
-        <!-- Mobile Menu  -->
-        <div class="mobile-menu">
-            <div class="menu-backdrop"></div>
-            <div class="close-btn"><i class="fas fa-times"></i></div>
-            
-            <nav class="menu-box">
-                <div class="nav-logo"><a routerLink="/home"><img src="assets/images/logoColor.png" alt="" title=""></a></div>
-                <div class="menu-outer"><!--Here Menu Will Come Automatically Via Javascript / Same Menu as in Header--></div>
-             
-            </nav>
-        </div><!-- End Mobile Menu -->
+      <div class="admin-user-menu desktop-admin">
+        <div class="admin-avatar">
+          <img src="assets/images/resource/author-1.png" alt="Administrador">
+        </div>
+
+        <div class="admin-info">
+          <strong>Administrador</strong>
+          <span>Panel Klinia</span>
+        </div>
+
+        <button type="button" class="logout-btn" (click)="logout()">
+          <i class="ph ph-sign-out"></i>
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+
+      <button type="button" class="admin-mobile-toggler" (click)="toggleMobileMenu()">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
+    </div>
+  </div>
+</header>
+
+<div class="admin-mobile-menu" *ngIf="showHeader && isMobileMenuOpen">
+  <div class="admin-mobile-backdrop" (click)="closeMobileMenu()"></div>
+
+  <aside class="admin-mobile-panel">
+    <button type="button" class="admin-mobile-close" (click)="closeMobileMenu()">×</button>
+
+    <div class="admin-mobile-logo">
+      <img src="assets/images/logoColor.png" alt="Klinia">
+    </div>
+
+    <nav class="admin-mobile-links">
+      <a routerLink="/home" (click)="closeMobileMenu()">Inicio</a>
+      <a routerLink="/home" (click)="closeMobileMenu()">Profesionales</a>
+      <a routerLink="/clients" (click)="closeMobileMenu()">Pacientes</a>
+    </nav>
+
+    <button type="button" class="admin-mobile-logout" (click)="logout()">
+      Cerrar sesión
+    </button>
+  </aside>
+</div>

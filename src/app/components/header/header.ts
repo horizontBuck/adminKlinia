@@ -11,11 +11,28 @@ import { AuthPocketbaseService } from '../../services/auth-pocketbase.service';
   styleUrl: './header.scss',
 })
 export class Header {
-  constructor (private auth: AuthPocketbaseService,
+  isMobileMenuOpen = false;
+
+  constructor(
+    private auth: AuthPocketbaseService,
     public router: Router
-  ){}
-logout() {
-  this.auth.pb.authStore.clear();
-  this.router.navigate(['/login']);
-}
+  ) {}
+
+  get showHeader(): boolean {
+    return !this.router.url.startsWith('/login');
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+  }
+
+  logout(): void {
+    this.auth.pb.authStore.clear();
+    this.closeMobileMenu();
+    this.router.navigate(['/login']);
+  }
 }

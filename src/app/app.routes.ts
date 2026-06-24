@@ -8,48 +8,50 @@ import { Login } from './page/login/login';
 
 export const routes: Routes = [
   {
-  path: 'login',
-  component: Login
-},
-     {
     path: '',
-    component: Home,
-    title: 'KLINIA | Inicio',
-      canActivate: [adminAuthGuard],
-    data: {
-      description: 'Bienvenido a KLINIA, tu app de servicio de salud',
-      canonical: '/',
-    },
-
+    redirectTo: 'login',
+    pathMatch: 'full'
   },
+
+  {
+    path: 'login',
+    component: Login,
+    title: 'KLINIA | Login Admin'
+  },
+
+  {
+    path: 'home',
+    component: Home,
+    canActivate: [adminAuthGuard],
+    title: 'KLINIA | Inicio',
+     data: {
+      description: 'Bienvenido a KLINIA, tu app de servicio de salud'
+     }
+  },
+
   {
     path: 'clients',
     component: Clients,
-    title: 'KLINIA | Clientes',
-      canActivate: [adminAuthGuard],
-    data: {
-      description: 'Bienvenido a KLINIA, tu app de servicio de salud',
-      canonical: '/',
-    },
+    canActivate: [adminAuthGuard],
+    title: 'KLINIA | Clientes'
   },
+
   {
     path: 'admin',
     component: AdminSidebar,
-      canActivate: [adminAuthGuard],
-    title: 'KLINIA | Admin',
-    data: {
-      description: 'Bienvenido a KLINIA, tu app de servicio de salud',
-      canonical: '/',
-    },
+    canActivate: [adminAuthGuard],
+    title: 'KLINIA | Admin'
   },
+
   {
     path: 'professionals/:id',
     component: ProfessionalDetail,
-      canActivate: [adminAuthGuard],
-    title: 'KLINIA | Profesional',
-    data: {
-      description: 'Bienvenido a KLINIA, tu app de servicio de salud',
-      canonical: '/',
-    },
+    canActivate: [adminAuthGuard],
+    title: 'KLINIA | Profesional'
+  },
+
+  {
+    path: '**',
+    redirectTo: 'login'
   }
 ];

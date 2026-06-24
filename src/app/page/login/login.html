@@ -1,1 +1,34 @@
-<p>login works!</p>
+<main class="admin-login-page">
+  <section class="login-card">
+    <img src="assets/images/logoColor.png" alt="Klinia" class="login-logo">
+
+    <h1>Panel administrador</h1>
+    <p>Ingresa con una cuenta autorizada.</p>
+
+    <form (ngSubmit)="login()">
+      <label>Correo</label>
+      <input
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        placeholder="admin@klinia.com"
+      >
+
+      <label>Contraseña</label>
+      <input
+        type="password"
+        name="password"
+        [(ngModel)]="password"
+        placeholder="••••••••"
+      >
+
+      <div class="login-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Ingresando...' : 'Ingresar' }}
+      </button>
+    </form>
+  </section>
+</main>

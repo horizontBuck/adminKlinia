@@ -135,8 +135,7 @@ export class Home implements OnInit, OnDestroy {
           });
         }
 
-        console.log('PRO:', professional.name, professional.id);
-        console.log('HORARIOS:', workingHours);
+       
         const fullProfessional = await this.auth.pb
           .collection('users')
           .getOne(professional.id);

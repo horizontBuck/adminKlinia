@@ -73,7 +73,6 @@ async loadProfessionals(page = 1): Promise<void> {  if (this.loadingProfessional
   }
 
   this.loadingProfessionals = true;
-  console.log('🔍 Cargando profesionales...');
   console.log('👤 Usuario autenticado actual:', this.auth.pb.authStore.model);
 
   try {
@@ -84,7 +83,6 @@ async loadProfessionals(page = 1): Promise<void> {  if (this.loadingProfessional
   expand: 'certificationFileUrl',
   fields: 'id,name,email,avatarFile,profession,businessName,providerStatus,phone,especialidades,modalidadAtencion,zonaAtencion,description,category,lat,lng,isOnline,Biography,gender,created,habilitacionNumber,docNumber,birthdate,certificationFileUrl,certifications,documents,expand.certificationFileUrl'
 });
-    console.log('✅ Registros encontrados:', records);
 
     const processed = records.map((u: any) => ({
       id: u.id,
@@ -117,7 +115,6 @@ certifications: this.parseJson(u.certifications),
 documents: this.parseJson(u.documents),
     }));
 
-    console.log('✅ Profesionales procesados:', processed);
     this._professionals$.next(processed);
   } catch (error: any) {
     console.error('❌ Error cargando profesionales:', error);
@@ -159,10 +156,7 @@ documents: this.parseJson(u.documents),
     
     try {
       await this.auth.pb.collection(this.collection).subscribe('*', (e) => {
-        console.log('👀 Cambio detectado en profesionales:', e.action, e.record);
-        // recarga datos tras crear/editar/eliminar
-/*         this.loadProfessionals();
- */      });
+    });
       console.log('🔁 Suscripción realtime activa en:', this.collection);
     } catch (err) {
       console.error('❌ Error en suscripción realtime:', err);
