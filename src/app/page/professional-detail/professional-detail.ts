@@ -38,11 +38,9 @@ export class ProfessionalDetail implements OnInit {
   totalTips = 0;
   totalAdjustments = 0;
   totalWithdrawals = 0;
-
   pendingWithdrawalTotal = 0;
   approvedWithdrawalTotal = 0;
   paidWithdrawalTotal = 0;
-
   selectedDocument: { label: string; url: string } | null = null;
   selectedDocumentSafeUrl: SafeResourceUrl | null = null;
 
